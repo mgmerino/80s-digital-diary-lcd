@@ -206,7 +206,7 @@ class IconMenu(App):
             # invert pixels on the label text
             #
             if i == self.sel:
-                ctx.d.set_pen(ctx.INK); ctx.d.rectangle(x, y+self.tileh-8, self.tilew, 10)
+                ctx.d.set_pen(ctx.INK); ctx.d.rectangle(x, y+self.tileh-8, self.tilew, 8)
                 ctx.d.set_pen(ctx.BG); ctx.d.text(label, x+(self.tilew-len(label)*6)//2, y+self.tileh-7, ctx.W, 1)
                 ctx.d.set_pen(ctx.INK)
         # paginador
