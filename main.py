@@ -264,10 +264,31 @@ def two(n): return "{:02d}".format(n)
 class ClockApp(App):
     title="Reloj"; tick_ms=200
     def draw_icon(self, ctx, x,y,w,h):
-        r=min(w,h)//3+2; cx=x+w//2; cy=y+h//2
-        draw_ring(ctx,cx,cy,r,2)
-        ctx.d.line(cx, cy, cx, cy-r+6)
-        ctx.d.line(cx, cy, cx+r-8, cy)
+        icon = [
+            0b0000011111100000,
+            0b0001100110011000,
+            0b0010000000000100,
+            0b0100000000001010,
+            0b0100000000010010,
+            0b1000010000100001,
+            0b1000001001000001,
+            0b1100000110000011,
+            0b1100000110000011,
+            0b1000000000000001,
+            0b1000000000000001,
+            0b0100000000000010,
+            0b0100000000000010,
+            0b0010000000000100,
+            0b0001100110011000,
+            0b0000011111100000,
+        ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
     def fmt(self, ctx, tm):
         if ctx.settings.get("clock_24h", True):
             return "{}:{}:{}".format(two(tm[3]),two(tm[4]),two(tm[5]))
@@ -296,13 +317,35 @@ class SettingsApp(App):
     title="Config"; tick_ms=300
     def __init__(self):
         self.idx=0
-        self.items=["Tema", "Brillo W", "Volver"]
+        self.items=["Tema", "Brillo W", "Set Time", "Volver"]
         self.themes=list(THEMES.keys())
         self.tidx=0
     def draw_icon(self, ctx, x,y,w,h):
-        r=min(w,h)//4; cx=x+w//2; cy=y+h//2
-        draw_ring(ctx,cx,cy,r+4,2)
-        draw_ring(ctx,cx,cy,r-2,2)
+        icon = [
+            0b0001001111001000,
+            0b0010101001010100,
+            0b0100011001100010,
+            0b1000000000000001,
+            0b0100000000000010,
+            0b0010000000000100,
+            0b1110000110000111,
+            0b1000001001000001,
+            0b1000001001000001,
+            0b1110000110000111,
+            0b0010000000000100,
+            0b0100000000000010,
+            0b1000000000000001,
+            0b0100011001100010,
+            0b0010101001010100,
+            0b0001001111001000,
+        ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
     def draw(self, ctx):
         cls(ctx); header(ctx,"Config")
         for i, it in enumerate(self.items):
@@ -313,12 +356,19 @@ class SettingsApp(App):
         ctx.d.text("W={}".format(ctx.settings.get("w_brightness",64)), 80, ctx.H-16, ctx.W, 1)
     def handle_key(self, ctx, k):
         if k in (ord('q'),27): return "pop"
+        # Arrow key support
+        if k == 0xB6:  # Down
+            k = ord('j')
+        elif k == 0xB5:  # Up
+            k = ord('k')
+        
         if k==ord('j') and self.idx< len(self.items)-1: self.idx+=1
         elif k==ord('k') and self.idx>0: self.idx-=1
         elif k==13:
             if self.idx==0: return ("push", ThemeChooserApp())
             if self.idx==1: return ("push", WBrightnessApp())
-            if self.idx==2: return "pop"
+            if self.idx==2: return ("push", SetTimeApp())
+            if self.idx==3: return "pop"
 
 class ThemeChooserApp(App):
     title="Tema"; tick_ms=200
@@ -399,9 +449,31 @@ class AppHelper:
 class ContactsApp(App):
     title="TEL"; tick_ms=200
     def draw_icon(self, ctx, x,y,w,h):
-        r=min(w,h)//4; cx=x+w//2; cy=y+h//2
-        draw_ring(ctx,cx,cy,r+4,2)
-        draw_ring(ctx,cx,cy,r-2,2)
+        icon =  [
+            0b0011111111111110,
+            0b0100000000000001,
+            0b0100110000111001,
+            0b0101001001000101,
+            0b0101001000111001,
+            0b0101001000000001,
+            0b0101001001010101,
+            0b0101001000000001,
+            0b0101001001010101,
+            0b0101001000000001,
+            0b0100110001010101,
+            0b0100010000000001,
+            0b0100010000111001,
+            0b0100010000000001,
+            0b0011111111111110,
+            0b0001010000000000,
+        ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
     def fmt_contact(self, c):
         if isinstance(c, dict):
             return "{}  {}".format(c.get('name',''), c.get('phone',''))
@@ -422,9 +494,31 @@ class ContactsApp(App):
 class MemosApp(App):
     title="Memos"; tick_ms=200
     def draw_icon(self, ctx, x,y,w,h):
-        r=min(w,h)//4; cx=x+w//2; cy=y+h//2
-        draw_ring(ctx,cx,cy,r+4,2)
-        draw_ring(ctx,cx,cy,r-2,2)
+        icon = [
+            0b0111111111111000,
+            0b1001000000010100,
+            0b1001000010010010,
+            0b1001001101010001,
+            0b1001000000010001,
+            0b1000111111100001,
+            0b1000000000000001,
+            0b1000000000000001,
+            0b1000111111111001,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b0111111111111110,
+        ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
     def fmt_memo(self, m):
         if isinstance(m, dict):
             return "{}  {}".format(m.get('title',''), m.get('text',''))
@@ -473,11 +567,32 @@ class CalendarApp(App):
         tm = time.localtime()
         self.y, self.m = tm[0], tm[1]
     def draw_icon(self, ctx, x,y,w,h):
-        rect_frame(ctx, x+4, y+4, w-8, h-10, 1)
-        ctx.d.line(x+8, y+4, x+8, y+1)
-        ctx.d.line(x+w-8, y+4, x+w-8, y+1)
-        gy = y+ h//2
-        ctx.d.line(x+6, gy, x+w-6, gy)
+        icon = [
+            0b0111111111111110,
+            0b1000000000000001,
+            0b1001001001001001,
+            0b1001010101101001,
+            0b1001011101011001,
+            0b1011010101001001,
+            0b1000000000000001,
+            0b1001111001111001,
+            0b1001001001001001,
+            0b1000001001001001,
+            0b1000010001111001,
+            0b1000100001001001,
+            0b1001000001001001,
+            0b1001111001111001,
+            0b1000000000000001,
+            0b0111111111111110,
+            ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
+
     def draw(self, ctx):
         # calculate first day of month
         first_w = self.weekday(self.y, self.m, 1)
@@ -494,9 +609,10 @@ class CalendarApp(App):
         cell_width = 18  # pixels per day column
         start_x = (ctx.W - 7 * cell_width) // 2
         header_y = 20
+        header_offset = 3  # offset to adjust header alignment (change this value)
         
         for i, wd in enumerate(weekdays):
-            x = start_x + i * cell_width
+            x = start_x + i * cell_width + header_offset
             ctx.d.text(wd, x, header_y, ctx.W, 1)
         
         # Get today's date for highlighting
@@ -570,13 +686,31 @@ class CalculatorApp(App):
         self.result = ""
         self.allowed = set("0123456789+-*/(). ")
     def draw_icon(self, ctx, x,y,w,h):
-        rect_frame(ctx, x+6, y+3, w-12, h-10, 1)
-        rect_frame(ctx, x+8, y+5, w-16, 6, 1)
-        bx = [x+10, x+ w//2 - 2, x+w-14]
-        by = [y+14, y+19]
-        for yy in by:
-            for xx in bx:
-                ctx.d.rectangle(xx, yy, 3, 3)
+        icon = [
+            0b0000000000000000,
+            0b0000111111110000,
+            0b0001000000001000,
+            0b0001001111001000,
+            0b0001010000101000,
+            0b0001010000101000,
+            0b0001001111001000,
+            0b0001000000001000,
+            0b0001010101001000,
+            0b0001000000001000,
+            0b0001010101001000,
+            0b0001000000001000,
+            0b0001010101101000,
+            0b0001000000001000,
+            0b0000111111110000,
+            0b0000000000000000,
+            ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
     def draw(self, ctx):
         cls(ctx); header(ctx, "Calc")
         use_font(ctx,"6")
@@ -637,13 +771,32 @@ class SnakeApp(App):
         self.speed_ms = 120
         self.last = time.ticks_ms()
     def draw_icon(self, ctx, x,y,w,h):
-        px = x+6; py = y+6
-        step = (w-12)//3
-        for i in range(1,6):
-            nx = x+6 + (i%3)*step if (i//3)%2==0 else x+w-6 - (i%3)*step
-            ny = py + (i//3)*((h-12)//2)
-            ctx.d.line(px, py, nx, ny); px, py = nx, ny
-        ctx.d.rectangle(px-1, py-1, 3, 3)
+        icon = [
+            0b0000000000100000,
+            0b0000000001000000,
+            0b0000000010000000,
+            0b0000000100000000,
+            0b0000000100000000,
+            0b0111111111111110,
+            0b1000000000000001,
+            0b1001000000001001,
+            0b1011101010010001,
+            0b1001000000100001,
+            0b1000000000000001,
+            0b0111111111111110,
+            0b0000000000000000,
+            0b0000000000000000,
+            0b0000000000000000,
+            0b0000000000000000,
+        ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
+
     def place_food(self):
         while True:
             fx = self.randrange(0, self.cols)
@@ -695,6 +848,220 @@ class SnakeApp(App):
                         self.snake.pop()
         return None
 
+# ---------- apps: Maze Generator ----------
+class MazeApp(App):
+    title="Maze"; tick_ms=100
+    def __init__(self):
+        try:
+            import urandom as random
+            self.random = random
+        except:
+            import random
+            self.random = random
+        self.cell_size = 4
+        self.cols = 30
+        self.rows = 12
+        self.offset_y = 10
+        self.player_x = 0
+        self.player_y = 0
+        self.exit_x = self.cols - 1
+        self.exit_y = self.rows - 1
+        self.won = False
+        self.generate_maze()
+    
+    def draw_icon(self, ctx, x,y,w,h):
+        icon = [
+            0b1111111111111111,
+            0b1000000100000001,
+            0b1011101011111101,
+            0b1010001000000101,
+            0b1010111111101101,
+            0b1000100000101001,
+            0b1111101110101011,
+            0b1000001010001001,
+            0b1011111011111101,
+            0b1010000010000001,
+            0b1010111110111101,
+            0b1000100000100001,
+            0b1110101111101111,
+            0b1000001000000001,
+            0b1011111011111101,
+            0b1000000000000001,
+        ]
+        start_x = x + (w - 16) // 2
+        start_y = y + (h - 12) // 2
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):
+                    ctx.d.pixel(start_x + col, start_y + row)
+    
+    def generate_maze(self):
+        # Initialize maze with all walls
+        self.maze = [[1 for _ in range(self.cols)] for _ in range(self.rows)]
+        # Recursive backtracking maze generation
+        stack = [(0, 0)]
+        self.maze[0][0] = 0
+        visited = set()
+        visited.add((0, 0))
+        
+        while stack:
+            cx, cy = stack[-1]
+            # Get unvisited neighbors
+            neighbors = []
+            for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
+                nx, ny = cx + dx, cy + dy
+                if 0 <= nx < self.cols and 0 <= ny < self.rows and (nx, ny) not in visited:
+                    neighbors.append((nx, ny))
+            
+            if neighbors:
+                # Choose random neighbor
+                idx = self.randrange(0, len(neighbors))
+                nx, ny = neighbors[idx]
+                self.maze[ny][nx] = 0
+                visited.add((nx, ny))
+                stack.append((nx, ny))
+            else:
+                stack.pop()
+        
+        # Ensure exit is open
+        self.maze[self.exit_y][self.exit_x] = 0
+    
+    def randrange(self, a, b):
+        try:
+            return self.random.randrange(a, b)
+        except:
+            return a + (self.random.getrandbits(8) % (b - a)) if b > a else a
+    
+    def draw(self, ctx):
+        cls(ctx); header(ctx, "Maze")
+        
+        # Draw maze
+        for y in range(self.rows):
+            for x in range(self.cols):
+                px = x * self.cell_size
+                py = self.offset_y + y * self.cell_size
+                if self.maze[y][x] == 1:  # Wall
+                    ctx.d.rectangle(px, py, self.cell_size, self.cell_size)
+        
+        # Draw player
+        ctx.d.set_pen(ctx.INK)
+        ctx.d.rectangle(
+            self.player_x * self.cell_size + 1,
+            self.offset_y + self.player_y * self.cell_size + 1,
+            self.cell_size - 2,
+            self.cell_size - 2
+        )
+        
+        # Draw exit
+        ctx.d.rectangle(
+            self.exit_x * self.cell_size,
+            self.offset_y + self.exit_y * self.cell_size,
+            self.cell_size,
+            self.cell_size
+        )
+        
+        if self.won:
+            ctx.d.text("WIN! r=new q=quit", 2, ctx.H-8, ctx.W, 1)
+    
+    def handle_key(self, ctx, k):
+        if k in (ord('q'), 27):
+            return "pop"
+        
+        if self.won and k == ord('r'):
+            self.player_x = 0
+            self.player_y = 0
+            self.won = False
+            self.generate_maze()
+            return None
+        
+        if not self.won:
+            # Arrow keys
+            new_x, new_y = self.player_x, self.player_y
+            if k == 0xB5:  # Up
+                new_y -= 1
+            elif k == 0xB6:  # Down
+                new_y += 1
+            elif k == 0xB4:  # Left
+                new_x -= 1
+            elif k == 0xB7:  # Right
+                new_x += 1
+            
+            # Check bounds and walls
+            if 0 <= new_x < self.cols and 0 <= new_y < self.rows:
+                if self.maze[new_y][new_x] == 0:  # Not a wall
+                    self.player_x = new_x
+                    self.player_y = new_y
+                    
+                    # Check if reached exit
+                    if self.player_x == self.exit_x and self.player_y == self.exit_y:
+                        self.won = True
+        
+        return None
+
+# ---------- apps: Games Menu ----------
+class GamesApp(App):
+    title="Games"; tick_ms=300
+    def __init__(self):
+        self.idx = 0
+        self.items = ["Snake", "Maze", "Volver"]
+    
+    def draw_icon(self, ctx, x,y,w,h):
+        icon = [
+            0b0000000000100000,
+            0b0000000001000000,
+            0b0000000010000000,
+            0b0000000100000000,
+            0b0000000100000000,
+            0b0111111111111110,
+            0b1000000000000001,
+            0b1001000000001001,
+            0b1011101010010001,
+            0b1001000000100001,
+            0b1000000000000001,
+            0b0111111111111110,
+            0b0000000000000000,
+            0b0000000000000000,
+            0b0000000000000000,
+            0b0000000000000000,
+        ]
+
+        start_x = x + (w - 16) // 2
+        start_y = y + (h - 12) // 2
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):
+                    ctx.d.pixel(start_x + col, start_y + row)
+    
+    def draw(self, ctx):
+        cls(ctx); header(ctx, "Games")
+        for i, it in enumerate(self.items):
+            mark = ">" if i == self.idx else " "
+            ctx.d.text("{} {}".format(mark, it), 2, 12+i*8, ctx.W, 1)
+    
+    def handle_key(self, ctx, k):
+        if k in (ord('q'), 27):
+            return "pop"
+        
+        # Arrow key support
+        if k == 0xB6:  # Down
+            k = ord('j')
+        elif k == 0xB5:  # Up
+            k = ord('k')
+        
+        if k == ord('j') and self.idx < len(self.items) - 1:
+            self.idx += 1
+        elif k == ord('k') and self.idx > 0:
+            self.idx -= 1
+        elif k == 13:
+            if self.idx == 0:
+                return ("push", SnakeApp())
+            elif self.idx == 1:
+                return ("push", MazeApp())
+            elif self.idx == 2:
+                return "pop"
+        
+        return None
+
 # ---------- apps: Set Time ----------
 class SetTimeApp(App):
     title="SetTime"; tick_ms=100
@@ -709,9 +1076,31 @@ class SetTimeApp(App):
         self.field = 0  # 0=year, 1=month, 2=day, 3=hour, 4=minute, 5=second
         self.fields = ["Year", "Month", "Day", "Hour", "Min", "Sec"]
     def draw_icon(self, ctx, x,y,w,h):
-        rect_frame(ctx, x+6, y+4, w-12, h-10, 1)
-        cx = x + w//2; cy = y + h//2
-        ctx.d.text("T", cx-3, cy-3, ctx.W, 1)
+        icon = [
+            0b0111111111111000,
+            0b1001000000010100,
+            0b1001000010010010,
+            0b1001001101010001,
+            0b1001000000010001,
+            0b1000111111100001,
+            0b1000000000000001,
+            0b1000000000000001,
+            0b1000111111111001,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b1001000000000101,
+            0b0111111111111110,
+        ]
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(icon):
+            for col in range(16):
+                if bits & (1 << (15 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
     def draw(self, ctx):
         cls(ctx); header(ctx, "Set Date/Time")
         use_font(ctx, "6")
@@ -774,13 +1163,12 @@ class SetTimeApp(App):
 def make_menu(ctx):
     entries = [
         {"name":"Clock",  "app": ClockApp()},
-        {"name":"Config", "app": SettingsApp()},
-        {"name":"SetTime", "app": SetTimeApp()},
         {"name":"Calc", "app": CalculatorApp()},
         {"name":"Cal", "app": CalendarApp()},
         {"name":"Memos", "app": MemosApp()},
         {"name":"Tel","app": ContactsApp()},
-        {"name":"Snake", "app": SnakeApp()},
+        {"name":"Games", "app": GamesApp()},
+        {"name":"Config", "app": SettingsApp()},
     ]
     return IconMenu(entries)
 
