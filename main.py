@@ -1,6 +1,6 @@
 # ===== main.py =====
 from machine import I2C, Pin, RTC
-from gfx_pack import GfxPack
+from gfx_pack import GfxPack  # type: ignore
 import time, math
 try:
     import ujson as json
@@ -479,31 +479,60 @@ class CalendarApp(App):
         gy = y+ h//2
         ctx.d.line(x+6, gy, x+w-6, gy)
     def draw(self, ctx):
-        use_font(ctx, "6")
         # calculate first day of month
         first_w = self.weekday(self.y, self.m, 1)
         dim = self.days_in_month(self.y, self.m)
         cls(ctx); header(ctx, "Calendario")
         
-        # Center the entire calendar
-        header_text = "Lu Ma Mi Ju Vi Sa Do"
-        header_width = len(header_text) * 6  # 6 pixels per char in bitmap6 font
-        start_x = (ctx.W - header_width) // 2
+        use_font(ctx, "6")
+        month_year = "{} {}".format(self.month_name(self.m), self.y)
+        month_x = (ctx.W - len(month_year) * 6) // 2
+        ctx.d.text(month_year, month_x, 12, ctx.W, 1)
         
-        ctx.d.text("{} {}".format(self.month_name(self.m), self.y), start_x, 12, ctx.W, 1)
-        ctx.d.text(header_text, start_x, 18, ctx.W, 1)
+        # Draw each weekday header at fixed positions
+        weekdays = ["M", "T", "W", "T", "F", "S", "S"]
+        cell_width = 18  # pixels per day column
+        start_x = (ctx.W - 7 * cell_width) // 2
+        header_y = 20
         
-        day = 1; ypix = 24
+        for i, wd in enumerate(weekdays):
+            x = start_x + i * cell_width
+            ctx.d.text(wd, x, header_y, ctx.W, 1)
+        
+        # Get today's date for highlighting
+        tm_now = time.localtime()
+        today_year, today_month, today_day = tm_now[0], tm_now[1], tm_now[2]
+        is_current_month = (self.y == today_year and self.m == today_month)
+        
+        # Draw each day at fixed tile positions
+        day = 1
+        day_start_y = 28
+        row_height = 7
+        
         for week in range(6):
-            line = ""
             for dow in range(7):
-                if week==0 and dow<first_w:
-                    line += "   "
-                elif day<=dim:
-                    line += "{:2d} ".format(day); day += 1
+                if week == 0 and dow < first_w:
+                    continue  # skip days before month starts
+                if day > dim:
+                    break  # month ended
+                
+                x = start_x + dow * cell_width
+                y = day_start_y + week * row_height
+                
+                # Highlight today's date
+                if is_current_month and day == today_day:
+                    ctx.d.set_pen(ctx.INK)
+                    ctx.d.rectangle(x, y, 12, 7)  # filled rectangle behind day
+                    ctx.d.set_pen(ctx.BG)
+                    ctx.d.text("{:2d}".format(day), x, y, ctx.W, 1)
+                    ctx.d.set_pen(ctx.INK)
                 else:
-                    line += "   "
-            ctx.d.text(line.rstrip(), start_x, ypix, ctx.W, 1); ypix += 6
+                    ctx.d.text("{:2d}".format(day), x, y, ctx.W, 1)
+                
+                day += 1
+            if day > dim:
+                break
+        
         use_font(ctx, "8")
     def handle_key(self, ctx, k):
         if k in (ord('q'),27): return "pop"
@@ -666,11 +695,87 @@ class SnakeApp(App):
                         self.snake.pop()
         return None
 
+# ---------- apps: Set Time ----------
+class SetTimeApp(App):
+    title="SetTime"; tick_ms=100
+    def __init__(self):
+        tm = time.localtime()
+        self.year = tm[0]
+        self.month = tm[1]
+        self.day = tm[2]
+        self.hour = tm[3]
+        self.minute = tm[4]
+        self.second = 0
+        self.field = 0  # 0=year, 1=month, 2=day, 3=hour, 4=minute, 5=second
+        self.fields = ["Year", "Month", "Day", "Hour", "Min", "Sec"]
+    def draw_icon(self, ctx, x,y,w,h):
+        rect_frame(ctx, x+6, y+4, w-12, h-10, 1)
+        cx = x + w//2; cy = y + h//2
+        ctx.d.text("T", cx-3, cy-3, ctx.W, 1)
+    def draw(self, ctx):
+        cls(ctx); header(ctx, "Set Date/Time")
+        use_font(ctx, "6")
+        
+        # Show current values
+        ctx.d.text("{:04d}-{:02d}-{:02d}".format(self.year, self.month, self.day), 10, 14, ctx.W, 1)
+        ctx.d.text("{:02d}:{:02d}:{:02d}".format(self.hour, self.minute, self.second), 10, 22, ctx.W, 1)
+        
+        use_font(ctx, "8")
+        # Show which field is selected
+        ctx.d.text("Edit: {}".format(self.fields[self.field]), 2, 34, ctx.W, 1)
+        vals = [self.year, self.month, self.day, self.hour, self.minute, self.second]
+        ctx.d.text("Value: {}".format(vals[self.field]), 2, 42, ctx.W, 1)
+        
+        ctx.d.text("Up/Dn=val L/R=field", 2, 52, ctx.W, 1)
+        ctx.d.text("Enter=save q=cancel", 2, 60, ctx.W, 1)
+    def handle_key(self, ctx, k):
+        if k == ord('q') or k == 27:
+            return "pop"
+        # Arrow keys
+        if k == 0xB7:  # Right - next field
+            self.field = (self.field + 1) % 6
+        elif k == 0xB4:  # Left - previous field
+            self.field = (self.field - 1) % 6
+        elif k == 0xB5:  # Up - increment
+            if self.field == 0: self.year = min(2099, self.year + 1)
+            elif self.field == 1: self.month = (self.month % 12) + 1
+            elif self.field == 2: self.day = min(31, self.day + 1)
+            elif self.field == 3: self.hour = (self.hour + 1) % 24
+            elif self.field == 4: self.minute = (self.minute + 1) % 60
+            elif self.field == 5: self.second = (self.second + 1) % 60
+        elif k == 0xB6:  # Down - decrement
+            if self.field == 0: self.year = max(2020, self.year - 1)
+            elif self.field == 1: self.month = ((self.month - 2) % 12) + 1
+            elif self.field == 2: self.day = max(1, self.day - 1)
+            elif self.field == 3: self.hour = (self.hour - 1) % 24
+            elif self.field == 4: self.minute = (self.minute - 1) % 60
+            elif self.field == 5: self.second = (self.second - 1) % 60
+        elif k == 13:  # Enter - save
+            # Set the RTC
+            # RTC datetime format: (year, month, day, weekday, hour, minute, second, subseconds)
+            # We'll calculate weekday
+            wday = self.calc_weekday(self.year, self.month, self.day)
+            ctx.rtc.datetime((self.year, self.month, self.day, wday, self.hour, self.minute, self.second, 0))
+            return "pop"
+        return None
+    def calc_weekday(self, y, m, d):
+        # Zeller's congruence for weekday (0=Mon, 6=Sun)
+        if m < 3:
+            m += 12
+            y -= 1
+        q = d
+        k = y % 100
+        j = y // 100
+        h = (q + ((13 * (m + 1)) // 5) + k + (k // 4) + (j // 4) - (2 * j)) % 7
+        # Convert to Monday=0 format
+        return (h + 5) % 7
+
 # ---------- Arranque ----------
 def make_menu(ctx):
     entries = [
         {"name":"Clock",  "app": ClockApp()},
         {"name":"Config", "app": SettingsApp()},
+        {"name":"SetTime", "app": SetTimeApp()},
         {"name":"Calc", "app": CalculatorApp()},
         {"name":"Cal", "app": CalendarApp()},
         {"name":"Memos", "app": MemosApp()},
