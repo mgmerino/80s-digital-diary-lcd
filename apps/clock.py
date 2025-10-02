@@ -57,7 +57,6 @@ class ClockApp(App):
     def draw(self, ctx):
         tm = time.localtime()
         cls(ctx)
-        header(ctx, "Reloj")
         
         # Date Format: DD/MONTH/YYYY
         use_font(ctx, "8")
