@@ -128,6 +128,7 @@ upload_file "core/__init__.py" "core/__init__.py"
 upload_file "core/context.py" "core/context.py"
 upload_file "core/ui.py" "core/ui.py"
 upload_file "core/input.py" "core/input.py"
+upload_file "core/utils.py" "core/utils.py"
 echo ""
 
 echo -e "${BLUE}--- Phase 3: Uploading app modules ---${NC}"
