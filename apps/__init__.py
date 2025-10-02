@@ -9,10 +9,13 @@ from .memos import MemosApp
 from .games import GamesApp
 from .settime import SetTimeApp
 from .moonphase import MoonPhaseApp
+from .theme_chooser import ThemeChooserApp
+from .w_brightness import WBrightnessApp
 
 __all__ = [
     'App', 'AppManager', 'IconMenu',
     'ClockApp', 'SettingsApp', 'CalculatorApp', 'CalendarApp',
-    'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp', 'MoonPhaseApp'
+    'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp', 'MoonPhaseApp',
+    'ThemeChooserApp', 'WBrightnessApp'
 ]
 

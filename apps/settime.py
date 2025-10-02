@@ -1,10 +1,8 @@
 # SetTime App
-# TODO: Copiar SetTimeApp del main.py original
 
 import time
 from apps.base import App
 from core.ui import cls, header, use_font
-
 
 class SetTimeApp(App):
     title = "SetTime"
