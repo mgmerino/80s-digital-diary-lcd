@@ -83,8 +83,8 @@ needs_upload() {
 update_cache() {
     local file="$1"
     local hash=$(get_hash "$file")
-    # Remove old entry and add new one
-    sed -i "/^$file:/d" "$CACHE_FILE" 2>/dev/null || true
+    # Remove old entry and add new one (use @ as delimiter to handle / in paths)
+    sed -i "\@^$file:@d" "$CACHE_FILE" 2>/dev/null || true
     echo "$file:$hash" >> "$CACHE_FILE"
 }
 
