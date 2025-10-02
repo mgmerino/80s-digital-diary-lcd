@@ -6,7 +6,28 @@ try:
     import ujson as json
 except:
     import json
-
+WORLD_MAP = [
+    0b000000000000011000011111110000000110000000000000000000000000000000,
+    0b000000000010010110111111111000000110000000000000000000000000000000,
+    0b000000000001110000111111110000000000000001000001111110000000000000,
+    0b000000001111010110001111110000000000000001011111111111100000000000,
+    0b010111111110101110011111100000000011111011111111111111111111110010,
+    0b011111111111110111000110000100000111111111111111111111111111000001,
+    0b010010011111100011100000000000100101111111111111100001111111111111,
+    0b000000011111011111100000001111111111111111111111000100000001000010,
+    0b000000001111111110000000001110010111111101111011110000000000000000,
+    0b000000000111110000000000001100110110111101111111111000000000000010,
+    0b000000000011110000000000011111111111111111111000000000000000000000,
+    0b010000000001111000000000111110111111111111000100000000000000000000,
+    0b000000000000010110110000001101110111000000100100100100000000000000,
+    0b000000000000000101111100000000001100000000001010100100000000000000,
+    0b000000000000000010111110000000000111000000000000000110000000000000,
+    0b000000000000000001100000000000010101100000000001111111100000000000,
+    0b000000000000000011110000000000000000000000000000011111100000000000,
+    0b000000000000000010000000000000000000000000000000000001000000000000,
+    0b000000000000000100000000000000000000000000000000000000000000000000,
+    0b000000000000000010000000000000000000000000000000000000000000000000,
+]
 # ---------- core: Contexto ----------
 class Context:
     def __init__(self):
@@ -27,29 +48,46 @@ class Context:
 
 # ---------- core: UI helpers ----------
 def use_font(ctx, size="8"):
-    ctx.d.set_font("bitmap6" if size=="6" else "bitmap8")
+    if size=="6":
+        ctx.d.set_font("bitmap6")
+    elif size=="8":
+        ctx.d.set_font("bitmap8")
+    elif size=="14":
+        ctx.d.set_font("bitmap14_outline")
+
 
 def cls(ctx):
-    d=ctx.d; d.set_pen(ctx.BG); d.clear(); d.set_pen(ctx.INK)
+    d = ctx.d
+    d.set_pen(ctx.BG)
+    d.clear()
+    d.set_pen(ctx.INK)
+
 
 def header(ctx, title):
-    d=ctx.d; W=ctx.W
-    d.set_pen(ctx.INK); d.rectangle(0,0,W,10)
-    d.set_pen(ctx.BG); d.text(title[:16], 2, 1, W, 1)
+    d = ctx.d
+    W = ctx.W
+    d.set_pen(ctx.INK)
+    d.rectangle(0, 0, W, 10)
+    d.set_pen(ctx.BG)
+    d.text(title[:16], 2, 1, W, 1)
     d.set_pen(ctx.INK)
 
-def rect_frame(ctx, x,y,w,h,th=1):
-    d=ctx.d
-    d.rectangle(x,y,w,h)
-    d.set_pen(ctx.BG); d.rectangle(x+th,y+th,max(0,w-2*th),max(0,h-2*th))
+
+def rect_frame(ctx, x, y, w, h, th=1):
+    d = ctx.d
+    d.rectangle(x, y, w, h)
+    d.set_pen(ctx.BG)
+    d.rectangle(x + th, y + th, max(0, w - 2 * th), max(0, h - 2 * th))
     d.set_pen(ctx.INK)
 
-def draw_ring(ctx, cx,cy,r,th=2):
-    d=ctx.d
-    d.circle(cx,cy,r)
+
+def draw_ring(ctx, cx, cy, r, th=2):
+    d = ctx.d
+    d.circle(cx, cy, r)
     inner = r - max(1, th)
-    if inner>0:
-        d.set_pen(ctx.BG); d.circle(cx,cy,inner)
+    if inner > 0:
+        d.set_pen(ctx.BG)
+        d.circle(cx, cy, inner)
     d.set_pen(ctx.INK)
 
 # ---------- core: Input (CardKB) ----------
@@ -260,10 +298,15 @@ class IconMenu(App):
         return None
 
 # ---------- apps: Reloj ----------
-def two(n): return "{:02d}".format(n)
+def two(n):
+    return "{:02d}".format(n)
+
+
 class ClockApp(App):
-    title="Reloj"; tick_ms=200
-    def draw_icon(self, ctx, x,y,w,h):
+    title = "Reloj"
+    tick_ms = 200
+    
+    def draw_icon(self, ctx, x, y, w, h):
         icon = [
             0b0000011111100000,
             0b0001100110011000,
@@ -289,43 +332,81 @@ class ClockApp(App):
             for col in range(16):
                 if bits & (1 << (15 - col)):  # check if bit is set
                     ctx.d.pixel(start_x + col, start_y + row)
+    
     def fmt(self, ctx, tm):
         if ctx.settings.get("clock_24h", True):
-            return "{}:{}:{}".format(two(tm[3]),two(tm[4]),two(tm[5]))
-        h=tm[3]; suf="AM" if h<12 else "PM"; h=h%12 or 12
-        return "{}:{}:{} {}".format(two(h),two(tm[4]),two(tm[5]),suf)
+            return "{}:{}:{}".format(two(tm[3]), two(tm[4]), two(tm[5]))
+        h = tm[3]
+        suf = "AM" if h < 12 else "PM"
+        h = h % 12 or 12
+        return "{}:{}:{} {}".format(two(h), two(tm[4]), two(tm[5]), suf)
+    
+    def month_name(self, m):
+        months = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", 
+                  "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
+        return months[m - 1]
+    
     def draw(self, ctx):
-        tm=time.localtime()
-        cls(ctx); header(ctx, "Reloj")
-        ctx.d.text(self.fmt(ctx, tm), 2, 16, ctx.W, 1)
-        ctx.d.text("{:04d}-{:02d}-{:02d}".format(tm[0],tm[1],tm[2]), 2, 24, ctx.W, 1)
-        draw_ring(ctx, 96, 36, 27, 2)
-        # agujas
-        h,m,s = tm[3],tm[4],tm[5]
+        tm = time.localtime()
+        cls(ctx)
+        header(ctx, "Reloj")
+        
+        # Date Format: DD/MONTH/YYYY
+        use_font(ctx, "8")
+        date_str = "{}/{}/{}".format(tm[2], self.month_name(tm[1]), tm[0])
+        ctx.d.text(date_str, 2, 16, ctx.W, 1)
+        
+        # Time Format: HH:MM:SS
+        use_font(ctx, "14")
+        ctx.d.text(self.fmt(ctx, tm), 2, 24, ctx.W, 1)
+        
+        # Hint for shortcut
+        use_font(ctx, "6")
+        ctx.d.text("s=set time", 2, ctx.H-6, ctx.W, 1)
+        
+        draw_ring(ctx, 96, 36, 25, 2)
+        
+        # agujas (clock hands)
+        h, m, s = tm[3], tm[4], tm[5]
+        
         def endpoint(r, ang_deg):
-            rad=math.radians(ang_deg-90); cx,cy=96,36
-            return int(cx+math.cos(rad)*r), int(cy+math.sin(rad)*r)
-        ha=(h%12 + m/60)*30; ma=m*6+s/10; sa=s*6
-        x,y=endpoint(14,ha); ctx.d.line(96,36,x,y)
-        x,y=endpoint(20,ma); ctx.d.line(96,36,x,y)
-        x,y=endpoint(23,sa); ctx.d.line(96,36,x,y)
+            rad = math.radians(ang_deg - 90)
+            cx, cy = 96, 36
+            return int(cx + math.cos(rad) * r), int(cy + math.sin(rad) * r)
+        
+        ha = (h % 12 + m / 60) * 30
+        ma = m * 6 + s / 10
+        sa = s * 6
+        
+        x, y = endpoint(14, ha)
+        ctx.d.line(96, 36, x, y)
+        x, y = endpoint(20, ma)
+        ctx.d.line(96, 36, x, y)
+        x, y = endpoint(23, sa)
+        ctx.d.line(96, 36, x, y)
+    
     def handle_key(self, ctx, k):
-        if k in (ord('q'),27): return "pop"
+        if k in (ord('q'), 27):
+            return "pop"
+        elif k == ord('s'):
+            return ("push", SetTimeApp())
 
 # ---------- apps: Ajustes (solo tema/brillo demo) ----------
 class SettingsApp(App):
-    title="Config"; tick_ms=300
+    title = "Config"
+    tick_ms = 300
+    
     def __init__(self):
-        self.idx=0
-        self.items=["Tema", "Brillo W", "Set Time", "Volver"]
-        self.themes=list(THEMES.keys())
-        self.tidx=0
+        self.idx = 0
+        self.items = ["Tema", "Brillo W", "Set Time", "Volver"]
+        self.themes = list(THEMES.keys())
+        self.tidx = 0
     def draw_icon(self, ctx, x,y,w,h):
         icon = [
-            0b0001001111001000,
-            0b0010101001010100,
-            0b0100011001100010,
-            0b1000000000000001,
+            0b0000001111000000,
+            0b0001101001011000,
+            0b0010011001100100,
+            0b0100000000000010,
             0b0100000000000010,
             0b0010000000000100,
             0b1110000110000111,
@@ -334,10 +415,10 @@ class SettingsApp(App):
             0b1110000110000111,
             0b0010000000000100,
             0b0100000000000010,
-            0b1000000000000001,
-            0b0100011001100010,
-            0b0010101001010100,
-            0b0001001111001000,
+            0b0100000000000010,
+            0b0010011001100100,
+            0b0001101001011000,
+            0b0000001111000000,
         ]
         start_x = x + (w - 16) // 2  # center horizontally
         start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
@@ -453,19 +534,19 @@ class ContactsApp(App):
             0b0011111111111110,
             0b0100000000000001,
             0b0100110000111001,
-            0b0101001001000101,
+            0b0101001101000101,
             0b0101001000111001,
-            0b0101001000000001,
+            0b0101001100000001,
             0b0101001001010101,
-            0b0101001000000001,
+            0b0101001100000001,
             0b0101001001010101,
-            0b0101001000000001,
-            0b0100110001010101,
+            0b0101001100000001,
+            0b0101111001010101,
             0b0100010000000001,
             0b0100010000111001,
             0b0100010000000001,
             0b0011111111111110,
-            0b0001010000000000,
+            0b0001110000000000,
         ]
         start_x = x + (w - 16) // 2  # center horizontally
         start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
@@ -495,22 +576,22 @@ class MemosApp(App):
     title="Memos"; tick_ms=200
     def draw_icon(self, ctx, x,y,w,h):
         icon = [
-            0b0111111111111000,
-            0b1001000000010100,
-            0b1001000010010010,
-            0b1001001101010001,
-            0b1001000000010001,
-            0b1000111111100001,
-            0b1000000000000001,
-            0b1000000000000001,
-            0b1000111111111001,
-            0b1001000000000101,
-            0b1001000000000101,
-            0b1001000000000101,
-            0b1001000000000101,
-            0b1001000000000101,
-            0b1001000000000101,
-            0b0111111111111110,
+            0b0000001100000000,
+            0b0000010010000000,
+            0b0000100001000000,
+            0b0001001000100000,
+            0b0010010100010000,
+            0b0100001000001000,
+            0b1000010011000100,
+            0b1000101100100010,
+            0b0100001010010001,
+            0b0010111111111010,
+            0b0001001011001111,
+            0b0000100100001111,
+            0b0000010011111111,
+            0b0000001000101111,
+            0b0000000101000000,
+            0b0000000010000000,
         ]
         start_x = x + (w - 16) // 2  # center horizontally
         start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
@@ -535,6 +616,7 @@ class MemosApp(App):
     def handle_key(self, ctx, k):
         if k in (ord('q'),27): return "pop"
         return None
+
 class Utils:
     @staticmethod
     def prompt_input(ctx, label, maxlen=24):
@@ -1158,7 +1240,29 @@ class SetTimeApp(App):
         h = (q + ((13 * (m + 1)) // 5) + k + (k // 4) + (j // 4) - (2 * j)) % 7
         # Convert to Monday=0 format
         return (h + 5) % 7
+# ---------- apps: Test ----------
+class TestApp(App):
+    title="Test"; tick_ms=100
+    def draw(self, ctx):
+        cls(ctx);
+        map = WORLD_MAP
+        x = 0
+        y = 0
+        w = 66
+        h = 20
+        start_x = x + (w - 16) // 2  # center horizontally
+        start_y = y + (h - 12) // 2  # center vertically (usually 0 since h=16)
+    
+        for row, bits in enumerate(map):
+            for col in range(66):
+                if bits & (1 << (65 - col)):  # check if bit is set
+                    ctx.d.pixel(start_x + col, start_y + row)
 
+
+    def handle_key(self, ctx, k):
+        if k in (ord('q'), 27):
+            return "pop"
+        return None
 # ---------- Arranque ----------
 def make_menu(ctx):
     entries = [
@@ -1169,6 +1273,7 @@ def make_menu(ctx):
         {"name":"Tel","app": ContactsApp()},
         {"name":"Games", "app": GamesApp()},
         {"name":"Config", "app": SettingsApp()},
+        {"name":"Test", "app": TestApp()},
     ]
     return IconMenu(entries)
 
