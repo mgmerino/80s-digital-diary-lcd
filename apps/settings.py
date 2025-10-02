@@ -11,7 +11,7 @@ class SettingsApp(App):
     
     def __init__(self):
         self.idx = 0
-        self.items = ["Tema", "Brillo W", "Set Time", "Volver"]
+        self.items = ["Theme", "W Brightness", "Set Time", "Back"]
     
     def draw_icon(self, ctx, x, y, w, h):
         # TODO: Copiar icon del main.py original

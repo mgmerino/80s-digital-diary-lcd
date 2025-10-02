@@ -1,7 +1,6 @@
 # Moon Phase App
 
 import time
-import math
 from apps.base import App
 from core.ui import cls, header, use_font
 
@@ -11,9 +10,6 @@ class MoonPhaseApp(App):
     tick_ms = 1000  # update every second
     
     def __init__(self):
-        # Moon phase icons as 32x32 binary arrays (4 rows of 32 bits each)
-        # Each phase is represented as 32 rows of 32-bit integers
-        self.moon_icons = self._create_moon_icons()
         self.phase_names = [
             "New Moon",
             "Waxing Crescent",
@@ -24,105 +20,116 @@ class MoonPhaseApp(App):
             "Last Quarter",
             "Waning Crescent"
         ]
-    
-    def _create_moon_icons(self):
-        """Create 32x32 moon phase icons in binary format"""
-        # Each icon is a list of 32 integers (32 bits each = 32x32 pixels)
         
-        # Helper to create circle mask
-        def circle_pixels():
-            """Generate a 32x32 circle"""
-            circle = []
-            for y in range(32):
-                row = 0
-                for x in range(32):
-                    # Circle equation: (x-16)^2 + (y-16)^2 <= 15^2
-                    dx, dy = x - 15.5, y - 15.5
-                    if dx*dx + dy*dy <= 225:  # radius ~15
-                        row |= (1 << (31 - x))
-                circle.append(row)
-            return circle
+        # Custom 32x32 pixel art moon phase icons
+        self.new_moon_icon = [
+            0b00000000000000000000000000000000,
+            0b00000000000000000000000000000000,
+            0b00000000001111111111110000000000,
+            0b00000000001111111111110000000000,
+            0b00000000110000000000001100000000,
+            0b00000000110000000000001100000000,
+            0b00000011000000000000000011000000,
+            0b00000011000100000000000011000000,
+            0b00001100000000000000000000110000,
+            0b00001100000000000000000000110000,
+            0b00110000000000000000000000001100,
+            0b00110000000000000000100000001100,
+            0b00110000000000000000000000001100,
+            0b00110000000000000000000000001100,
+            0b00110000000000000000001000001100,
+            0b00110000000010000000000000001100,
+            0b00110000000000000000000000001100,
+            0b00110000000000000000000000001100,
+            0b00110000001000000000000000001100,
+            0b00110000000000000000000000001100,
+            0b00110000000000000010000000001100,
+            0b00110000000000000000000000001100,
+            0b00001100000000000000000000110000,
+            0b00001100000000000000000000110000,
+            0b00000011000000000000000011000000,
+            0b00000011000000000000000011000000,
+            0b00000000110000000000001100000000,
+            0b00000000110000000000001100000000,
+            0b00000000001111111111110000000000,
+            0b00000000001111111111110000000000,
+            0b00000000000000000000000000000000,
+            0b00000000000000000000000000000000,
+        ]
+        self.waxing_crescent_icon = [
+            0b00000000000000000000000000000000,
+            0b00000000000000000000000000000000,
+            0b00000000001111111111110000000000,
+            0b00000000001111111111110000000000,
+            0b00000000111111110000001100000000,
+            0b00000000111111110000001100000000,
+            0b00000011111100000000000011000000,
+            0b00000011111100000000000011000000,
+            0b00001111111100000000000000110000,
+            0b00001111111100000000000000110000,
+            0b00111111110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00111110110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00110111110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00111110110000000000000000001100,
+            0b00111111110000000000000000001100,
+            0b00001111111100000000000000110000,
+            0b00001111111100000000000000110000,
+            0b00000011111100000000000011000000,
+            0b00000011111100000000000011000000,
+            0b00000000111111110000001100000000,
+            0b00000000111111110000001100000000,
+            0b00000000001111111111110000000000,
+            0b00000000001111111111110000000000,
+            0b00000000000000000000000000000000,
+            0b00000000000000000000000000000000,
+        ]
         
-        # Helper to create half-circle (left or right)
-        def half_circle(left=True):
-            """Generate half of a 32x32 circle"""
-            half = []
-            for y in range(32):
-                row = 0
-                for x in range(32):
-                    dx, dy = x - 15.5, y - 15.5
-                    if dx*dx + dy*dy <= 225:
-                        if left and x <= 16:
-                            row |= (1 << (31 - x))
-                        elif not left and x >= 16:
-                            row |= (1 << (31 - x))
-                half.append(row)
-            return half
+        # Placeholder icons (reuse existing ones until you create them)
+        # TODO: Create custom icons for these phases
+        self.first_quarter_icon = self.waxing_crescent_icon  # Placeholder
+        self.waxing_gibbous_icon = self.waxing_crescent_icon  # Placeholder
+        self.full_moon_icon = self.waxing_crescent_icon  # Placeholder
+        self.waning_gibbous_icon = self.waxing_crescent_icon  # Placeholder
+        self.last_quarter_icon = self.waxing_crescent_icon  # Placeholder
+        self.waning_crescent_icon = self.waxing_crescent_icon  # Placeholder
         
-        # Helper for crescent/gibbous phases
-        def phase_shape(phase_ratio):
-            """Generate moon shape for given phase (0.0 to 1.0)"""
-            shape = []
-            for y in range(32):
-                row = 0
-                for x in range(32):
-                    dx, dy = x - 15.5, y - 15.5
-                    if dx*dx + dy*dy <= 225:  # in circle
-                        # Calculate if pixel should be lit
-                        if phase_ratio < 0.5:
-                            # Waxing: show right side, curve on left
-                            phase_x = 16 - (1 - 2*phase_ratio) * 16
-                            if x >= phase_x:
-                                row |= (1 << (31 - x))
-                        else:
-                            # Waning: show left side, curve on right  
-                            phase_x = 16 + (2*phase_ratio - 1) * 16
-                            if x <= phase_x:
-                                row |= (1 << (31 - x))
-                shape.append(row)
-            return shape
-        
-        # Create 8 moon phases
-        icons = []
-        
-        # 0: New Moon (empty circle outline)
-        new_moon = []
-        for y in range(32):
-            row = 0
-            for x in range(32):
-                dx, dy = x - 15.5, y - 15.5
-                dist = math.sqrt(dx*dx + dy*dy)
-                if 14 <= dist <= 16:  # just the outline
-                    row |= (1 << (31 - x))
-            new_moon.append(row)
-        icons.append(new_moon)
-        
-        # 1-7: Other phases using phase_shape
-        for i in range(1, 8):
-            icons.append(phase_shape(i / 8.0))
-        
-        return icons
+        # All 8 moon phase icons in order
+        self.moon_icons = [
+            self.new_moon_icon,           # 0: New Moon
+            self.waxing_crescent_icon,     # 1: Waxing Crescent
+            self.first_quarter_icon,       # 2: First Quarter (placeholder)
+            self.waxing_gibbous_icon,      # 3: Waxing Gibbous (placeholder)
+            self.full_moon_icon,           # 4: Full Moon (placeholder)
+            self.waning_gibbous_icon,      # 5: Waning Gibbous (placeholder)
+            self.last_quarter_icon,        # 6: Last Quarter (placeholder)
+            self.waning_crescent_icon,     # 7: Waning Crescent (placeholder)
+        ]
     
     def draw_icon(self, ctx, x, y, w, h):
-        """Draw 16x16 moon icon for menu"""
-        # Simple moon icon for the menu (16x16)
         icon = [
+            0b0000000000000000,
             0b0000011111100000,
-            0b0001111111111000,
-            0b0011111111111100,
-            0b0111111111111110,
-            0b0111111111111110,
-            0b1111111111111111,
-            0b1111111111111111,
-            0b1111111111111111,
-            0b1111111111111111,
-            0b1111111111111111,
-            0b1111111111111111,
-            0b0111111111111110,
-            0b0111111111111110,
-            0b0011111111111100,
-            0b0001111111111000,
-            0b0000011111100000,
+            0b0000111100010000,
+            0b0001111110001000,
+            0b0011111111000100,
+            0b0111111111000010,
+            0b0111101111100010,
+            0b0111111111100010,
+            0b0111011011100010,
+            0b0111111111100010,
+            0b0111101111100010,
+            0b0011111111000100,
+            0b0011111111001000,
+            0b0001111110010000,
+            0b0000111111100000,
+            0b0000000000000000,
         ]
         start_x = x + (w - 16) // 2
         start_y = y + (h - 12) // 2

@@ -13,9 +13,9 @@ from apps import (
 def make_menu(ctx):
     entries = [
         {"name": "Clock", "app": ClockApp()},
-        {"name": "Calc", "app": CalculatorApp()},
         {"name": "Cal", "app": CalendarApp()},
         {"name": "Moon", "app": MoonPhaseApp()},
+        {"name": "Calc", "app": CalculatorApp()},
         {"name": "Memos", "app": MemosApp()},
         {"name": "Tel", "app": ContactsApp()},
         {"name": "Games", "app": GamesApp()},
