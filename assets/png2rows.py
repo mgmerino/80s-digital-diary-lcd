@@ -5,7 +5,6 @@ import sys
 path = sys.argv[1]
 im = Image.open(path).convert("RGBA").resize((16, 16), Image.NEAREST)
 
-# "Encendido" = píxel oscuro (L<128) y con alfa > 0
 L = im.convert("L")
 A = im.getchannel("A")
 rows = []
@@ -16,7 +15,7 @@ for y in range(16):
         val = (val << 1) | (1 if on else 0)
     rows.append(val)
 
-print("ICONO_16_ = [")
+print("ICON = [")
 for r in rows:
     print(f"  0b{r:016b},")
 print("]")

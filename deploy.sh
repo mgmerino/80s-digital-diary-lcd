@@ -145,9 +145,9 @@ echo ""
 
 echo -e "${BLUE}--- Phase 4: Uploading main file ---${NC}"
 if [ -f "main_new.py" ]; then
-    upload_file "main_new.py" "main.py"
+    upload_file "main.py" "main.py"
 else
-    echo -e "${YELLOW}Warning: main_new.py not found, skipping${NC}"
+    echo -e "${YELLOW}Warning: main.py not found, skipping${NC}"
 fi
 echo ""
 

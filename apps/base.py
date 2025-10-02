@@ -62,9 +62,6 @@ class IconMenu(App):
     def __init__(self, entries):
         self.entries = entries
         self.cols, self.rows = 3, 2
-        # The display has a resolution of 128x64
-        # so we need to calculate the size of the tiles
-        # for 3 columns and 2 rows, the total width is 128
         self.tilew, self.tileh = 40, 28
         self.gx, self.gy = 2, 2
         self.per = self.cols * self.rows
@@ -81,28 +78,28 @@ class IconMenu(App):
     def draw(self, ctx):
         cls(ctx)
         items = self.current_items()
-        # grid centrado
+        # calculate grid size and position
         gridw = self.cols * self.tilew + (self.cols - 1) * self.gx
         gridh = self.rows * self.tileh + (self.rows - 1) * self.gy
         base_x = (ctx.W - gridw) // 2
         base_y = (ctx.H - gridh) // 2
-        # pintar celdas
+
         for i, ent in enumerate(items):
             r = i // self.cols
             c = i % self.cols
             x = base_x + c * (self.tilew + self.gx)
             y = base_y + r * (self.tileh + self.gy)
             rect_frame(ctx, x, y, self.tilew, self.tileh, 1)
-            # icono (vector simple por defecto)
+            
+            # every app can have a draw_icon method
             if hasattr(ent["app"], "draw_icon"):
                 ent["app"].draw_icon(ctx, x, y, self.tilew - 2, self.tileh - 12)
-            # etiqueta
+            # label
             label = ent["name"][:8]
             use_font(ctx, "6")
             ctx.d.text(label, x + (self.tilew - len(label) * 6) // 2, y + self.tileh - 8, ctx.W, 1)
-            #
-            # invert pixels on the label text
-            #
+            
+            # invert pixels on the label text for selected item
             if i == self.sel:
                 ctx.d.set_pen(ctx.INK)
                 ctx.d.rectangle(x, y + self.tileh - 8, self.tilew, 8)
@@ -148,7 +145,7 @@ class IconMenu(App):
             new_abs = self.page * self.per + new_sel
             if new_abs < len(self.entries):
                 self.sel = new_sel
-        # paginar
+        # paginate
         elif k in (ord('.'), ord('L')) and self.page < self.pages() - 1:
             self.page += 1
             self.sel = 0
