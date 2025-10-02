@@ -8,10 +8,11 @@ from .contacts import ContactsApp
 from .memos import MemosApp
 from .games import GamesApp
 from .settime import SetTimeApp
+from .moonphase import MoonPhaseApp
 
 __all__ = [
     'App', 'AppManager', 'IconMenu',
     'ClockApp', 'SettingsApp', 'CalculatorApp', 'CalendarApp',
-    'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp'
+    'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp', 'MoonPhaseApp'
 ]
 

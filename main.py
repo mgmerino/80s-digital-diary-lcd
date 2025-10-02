@@ -6,7 +6,7 @@ from core import Context
 from apps import (
     AppManager, IconMenu,
     ClockApp, SettingsApp, CalculatorApp, CalendarApp,
-    ContactsApp, MemosApp, GamesApp
+    ContactsApp, MemosApp, GamesApp, MoonPhaseApp
 )
 
 
@@ -15,6 +15,7 @@ def make_menu(ctx):
         {"name": "Clock", "app": ClockApp()},
         {"name": "Calc", "app": CalculatorApp()},
         {"name": "Cal", "app": CalendarApp()},
+        {"name": "Moon", "app": MoonPhaseApp()},
         {"name": "Memos", "app": MemosApp()},
         {"name": "Tel", "app": ContactsApp()},
         {"name": "Games", "app": GamesApp()},

@@ -141,6 +141,7 @@ upload_file "apps/calendar.py" "apps/calendar.py"
 upload_file "apps/contacts.py" "apps/contacts.py"
 upload_file "apps/memos.py" "apps/memos.py"
 upload_file "apps/games.py" "apps/games.py"
+upload_file "apps/moonphase.py" "apps/moonphase.py"
 upload_file "apps/settime.py" "apps/settime.py"
 echo ""
 
