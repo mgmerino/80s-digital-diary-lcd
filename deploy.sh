@@ -5,7 +5,7 @@
 set -e  # Exit on error
 
 # Configuration
-PORT="${PICO_PORT:-/dev/ttyACM0}"
+PORT="${PICO_PORT:-/dev/ttyACM1}"
 CACHE_FILE=".deploy_cache"
 FORCE_UPLOAD=false
 
