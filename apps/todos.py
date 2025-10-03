@@ -16,8 +16,9 @@ class TodoApp(App):
         self.selected_todo = None
         self.edit_buffer = []
         self.scroll_offset = 0
-        self.date_field = 0  # 0=year, 1=month, 2=day, 3=hour, 4=minute
+        self.date_field = 0  # 0=year, 1=month, 2=day, 3=hour, 4=minute, 5=alarm
         self.date_values = [2024, 1, 1, 12, 0]  # temp values for date entry
+        self.alarm_enabled = False  # temp value for alarm setting
         
         # Todo checkbox icons (16x16)
         self.checkbox_empty = [
@@ -210,14 +211,22 @@ class TodoApp(App):
             if self.selected_index >= len(todos):
                 self.selected_index = max(0, len(todos) - 1)
             
-            # Display todos (4 visible at a time now with more space)
-            max_visible = 4
+            # Display todos (3 visible to avoid overlap with help text)
+            # Maximum rendering area: 55px to leave space for help text
+            max_visible = 3
             start_idx = max(0, self.selected_index - 1)
             visible_todos = todos[start_idx:start_idx + max_visible]
             
             y = 2
+            max_y = 55  # Limit rendering to this y-coordinate
+            
             for i, todo in enumerate(visible_todos):
                 actual_idx = start_idx + i
+                
+                # Stop rendering if we would exceed the safe area
+                if y + 14 > max_y:
+                    break
+                
                 text = todo.get('text', '')
                 completed = todo.get('completed', False)
                 due_date = todo.get('due_date')
@@ -255,9 +264,9 @@ class TodoApp(App):
                 
                 y += 16
         
-        # Help text
+        # Help text - positioned safely at bottom
         use_font(ctx, "6")
-        ctx.d.text("n=new  Space=check  q=quit", 2, ctx.H - 6, ctx.W, 1)
+        ctx.d.text("n=new  Space=check  q=quit", 2, 57, ctx.W, 1)
     
     def draw_view(self, ctx):
         """Draw todo view mode"""
@@ -431,32 +440,45 @@ class TodoApp(App):
     def draw_set_date(self, ctx):
         """Draw date/time setting mode"""
         cls(ctx)
-        header(ctx, "Set Due Date")
+        # No header to save space
         
-        use_font(ctx, "8")
+        use_font(ctx, "6")
         
-        # Show current values
-        y = 16
-        fields = ["Year", "Month", "Day", "Hour", "Min"]
+        # Show current values - 6 fields on left side
+        y = 2
+        fields = ["Year", "Mon", "Day", "Hour", "Min", "Alarm"]
         
         for i, field in enumerate(fields):
             if i == self.date_field:
                 ctx.d.set_pen(ctx.INK)
-                ctx.d.rectangle(0, y - 1, ctx.W, 10)
+                ctx.d.rectangle(0, y - 1, 60, 8)  # Limit highlight to left side
                 ctx.d.set_pen(ctx.BG)
             
-            value_str = "{}: {:04d}".format(field, self.date_values[i]) if i == 0 else "{}: {:02d}".format(field, self.date_values[i])
-            ctx.d.text(value_str, 4, y, ctx.W, 1)
+            if i < 5:
+                # Date/time fields
+                value_str = "{}: {:04d}".format(field, self.date_values[i]) if i == 0 else "{}: {:02d}".format(field, self.date_values[i])
+            else:
+                # Alarm field
+                value_str = "Alarm: {}".format("ON" if self.alarm_enabled else "OFF")
+            
+            ctx.d.text(value_str, 2, y, 60, 1)  # Left side only
             
             if i == self.date_field:
                 ctx.d.set_pen(ctx.INK)
             
-            y += 10
+            y += 8
         
-        # Help
-        use_font(ctx, "6")
-        ctx.d.text("j/k=change  Tab=next field", 2, ctx.H - 14, ctx.W, 1)
-        ctx.d.text("Enter=save  Esc=skip", 2, ctx.H - 6, ctx.W, 1)
+        # Help text on right side (vertical layout)
+        help_x = 66  # Start at x=66 (leaving 2px margin from x=64)
+        ctx.d.text("j/k", help_x, 2, ctx.W, 1)
+        ctx.d.text("chg", help_x, 9, ctx.W, 1)
+        ctx.d.text("", help_x, 16, ctx.W, 1)
+        ctx.d.text("Tab", help_x, 23, ctx.W, 1)
+        ctx.d.text("next", help_x, 30, ctx.W, 1)
+        ctx.d.text("", help_x, 37, ctx.W, 1)
+        ctx.d.text("Ent", help_x, 44, ctx.W, 1)
+        ctx.d.text("save", help_x, 51, ctx.W, 1)
+        ctx.d.text("Esc", help_x, 58, ctx.W, 1)
     
     def draw(self, ctx):
         if self.mode == 'list':
@@ -516,6 +538,7 @@ class TodoApp(App):
             self.mode = 'new'
             self.edit_buffer = []
             self.scroll_offset = 0
+            self.alarm_enabled = False  # Reset alarm for new todo
         
         return None
     
@@ -604,6 +627,7 @@ class TodoApp(App):
                 now = time.localtime()
                 self.date_values = [now[0], now[1], now[2], (now[3] + 1) % 24, 0]
                 self.date_field = 0
+                self.alarm_enabled = False  # Default alarm off
                 self._new_text = new_text
                 self.mode = 'set_date'
             else:
@@ -653,7 +677,7 @@ class TodoApp(App):
                 'text': self._new_text,
                 'completed': False,
                 'due_date': due_timestamp,
-                'alarm': False,
+                'alarm': self.alarm_enabled,
                 'timestamp': time.time()
             })
             self.save_todos(ctx, todos)
@@ -674,7 +698,7 @@ class TodoApp(App):
             self.selected_index = 0
         
         elif k in (9, ord('\t')):  # Tab - next field
-            self.date_field = (self.date_field + 1) % 5
+            self.date_field = (self.date_field + 1) % 6  # Now 6 fields including alarm
         
         elif k in (0xB5, ord('k')):  # Up - increment value
             if self.date_field == 0:  # Year
@@ -687,6 +711,8 @@ class TodoApp(App):
                 self.date_values[3] = (self.date_values[3] + 1) % 24
             elif self.date_field == 4:  # Minute
                 self.date_values[4] = (self.date_values[4] + 5) % 60
+            elif self.date_field == 5:  # Alarm
+                self.alarm_enabled = not self.alarm_enabled
         
         elif k in (0xB6, ord('j')):  # Down - decrement value
             if self.date_field == 0:  # Year
@@ -699,6 +725,8 @@ class TodoApp(App):
                 self.date_values[3] = (self.date_values[3] - 1) % 24
             elif self.date_field == 4:  # Minute
                 self.date_values[4] = (self.date_values[4] - 5) % 60
+            elif self.date_field == 5:  # Alarm
+                self.alarm_enabled = not self.alarm_enabled
         
         return None
 

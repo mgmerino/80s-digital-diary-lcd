@@ -125,27 +125,35 @@ class MemosApp(App):
     def draw_list(self, ctx):
         """Draw memos list view"""
         cls(ctx)
-        header(ctx, "Memos")
+        # No header to save space
         
         memos = self.get_sorted_memos(ctx)
         
         use_font(ctx, "6")
         if not memos:
-            ctx.d.text("No memos yet", 2, 16, ctx.W, 1)
-            ctx.d.text("Press 'n' to create one", 2, 24, ctx.W, 1)
+            ctx.d.text("No memos yet", 2, 8, ctx.W, 1)
+            ctx.d.text("Press 'n' to create one", 2, 16, ctx.W, 1)
         else:
             # Ensure valid selection
             if self.selected_index >= len(memos):
                 self.selected_index = max(0, len(memos) - 1)
             
             # Display memos (3 visible at a time)
+            # Limit rendering area to prevent overlap with help text
             max_visible = 3
             start_idx = max(0, self.selected_index - 1)
             visible_memos = memos[start_idx:start_idx + max_visible]
             
-            y = 14
+            y = 2
+            max_y = 55  # Limit rendering to leave space for help text
+            
             for i, memo in enumerate(visible_memos):
                 actual_idx = start_idx + i
+                
+                # Stop rendering if we would exceed the safe area
+                if y + 14 > max_y:
+                    break
+                
                 text = memo.get('text', '')
                 date = self.format_date(memo.get('timestamp', 0))
                 
@@ -170,9 +178,9 @@ class MemosApp(App):
                 
                 y += 16
         
-        # Help text
+        # Help text - positioned safely at bottom
         use_font(ctx, "6")
-        ctx.d.text("n=new  Enter=view  q=quit", 2, ctx.H - 6, ctx.W, 1)
+        ctx.d.text("n=new  Enter=view  q=quit", 2, 57, ctx.W, 1)
     
     def draw_view(self, ctx):
         """Draw memo view mode"""
