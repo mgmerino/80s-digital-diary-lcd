@@ -17,6 +17,17 @@ class ContactsApp(App):
         self.selected_contact = None
         self.edit_field = None  # 'name' or 'phone'
         self.edit_buffer = []
+        
+        # Alphabet bitmap: 99x8 pixels (approx), each letter 4px wide, no separation in bitmap
+        self.alphabet_bitmap = [
+            0b00110011100111001110011110111100111010010111100001010010100001001010010111101111011110111001111011110100101001010010100101111000,
+            0b00110010010100101001010000100001000010010010000001010010100001111010010100101001010010100101000000100100101001010010100100001000,
+            0b01001010010100001001010000100001000010010010000001010100100001001011010100101001010010101001000000100100101001001100111100010000,
+            0b01001011100100001001011100111001000011110010000001011000100001001011010100101111010010110001111000100100101001001000001000010000,
+            0b01111010010100001001010000100001000010010010000001011000100001001010110100101000010010101000001000100100101001000100001000100000,
+            0b01001010010100001001010000100001011010010010000001010100100001001010110100101000010010100100001000100100101001001100001000100000,
+            0b01001010010100101001010000100001001010010010000001010010100001001010010100101000001100100100001000100100101111010010001001000000,
+            0b01001011110111001110011110100000111010010111101111010010111101001010010111101000000010100101111000100111101111010010001001111000,]
     
     def draw_icon(self, ctx, x, y, w, h):
         icon = [
@@ -65,56 +76,85 @@ class ContactsApp(App):
         
         return grouped
     
+    def draw_letter_from_bitmap(self, ctx, letter_index, x, y, invert=False):
+        """Draw a single letter from the alphabet bitmap"""
+        # Each letter is 4 pixels wide, consecutive in bitmap (no separation)
+        # Bitmap has 99 bits total, so we use the actual bit length
+        start_bit = letter_index * 4  # Starting position - letters are consecutive
+        bitmap_width = 128  # Actual width of the bitmap
+        
+        for row in range(8):
+            bitmap_row = self.alphabet_bitmap[row]
+            for col in range(4):  # Each letter is 4 pixels wide
+                bit_pos = start_bit + col
+                # Safety check to prevent overflow
+                if bit_pos >= bitmap_width:
+                    continue
+                # Access from MSB (left) to LSB (right)
+                # For a 99-bit number, leftmost bit is at position 98 (when counting from right)
+                if bitmap_row & (1 << (bitmap_width - 1 - bit_pos)):
+                    if invert:
+                        # Don't draw (will show as background color when inverted)
+                        pass
+                    else:
+                        ctx.d.pixel(x + col, y + row)
+                else:
+                    if invert:
+                        ctx.d.pixel(x + col, y + row)
+    
     def draw_alphabet_bar(self, ctx, grouped):
-        """Draw alphabet navigation bar at bottom"""
-        use_font(ctx, "6")
-        y = ctx.H - 7
-        x = 2
+        """Draw alphabet navigation bar at bottom using bitmap"""
+        # Single line at y=56 (near bottom of 64px display)
+        y = 56
+        x = 0  # Start at x=0 (26 letters * 6px = 156px, will need to scroll or fit)
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         
         for i, letter in enumerate(letters):
-            # Highlight current letter
+            # Skip letters that would go off screen (128px width)
+            if x + 4 > 128:
+                break
+                
+            # Highlight current letter or letters with contacts
             if letter == self.current_letter:
+                # Selected letter - filled background
                 ctx.d.set_pen(ctx.INK)
-                ctx.d.rectangle(x, y - 1, 5, 8)
+                ctx.d.rectangle(x, y, 4, 8)
                 ctx.d.set_pen(ctx.BG)
-                ctx.d.text(letter, x, y, ctx.W, 1)
+                self.draw_letter_from_bitmap(ctx, i, x, y, invert=True)
                 ctx.d.set_pen(ctx.INK)
-            # Accent letters with contacts
             elif letter in grouped:
-                ctx.d.set_pen(ctx.INK)
-                ctx.d.rectangle(x, y - 1, 5, 8)
-                ctx.d.set_pen(ctx.BG)
-                ctx.d.text(letter, x, y, ctx.W, 1)
-                ctx.d.set_pen(ctx.INK)
+                # Letter with contacts - draw frame
+                #ctx.d.rectangle(x - 1, y - 1, 6, 10)
+                pass
+                self.draw_letter_from_bitmap(ctx, i, x, y, invert=False)
             else:
-                ctx.d.text(letter, x, y, ctx.W, 1)
+                # Normal letter
+                self.draw_letter_from_bitmap(ctx, i, x, y, invert=False)
             
-            x += 5
-            if i == 12:  # Split into two rows
-                x = 2
-                y += 7
+            # Move to next letter position (4px letter + 2px separation)
+            x += 6
     
     def draw_list(self, ctx):
         """Draw contacts list view"""
         cls(ctx)
-        header(ctx, "Contacts")
+        # No header to save space
         
         grouped = self.get_contacts_by_letter(ctx)
         contacts_in_letter = grouped.get(self.current_letter, [])
         
-        use_font(ctx, "8")
-        # Display current letter and count
+        use_font(ctx, "6")
+        # Display current letter and count at top
         letter_info = "{}: {} contact{}".format(
             self.current_letter, 
             len(contacts_in_letter),
             's' if len(contacts_in_letter) != 1 else ''
         )
-        ctx.d.text(letter_info, 2, 12, ctx.W, 1)
+        ctx.d.text(letter_info, 2, 2, ctx.W, 1)
         
-        # Display contacts
-        y = 22
-        max_visible = 3
+        # Display contacts - limited area to avoid alphabet bar
+        y = 10
+        max_visible = 3  # Increased - single line alphabet bar gives more room
+        max_y = 40  # Stop before help text and alphabet bar (now at y=56)
         
         # Ensure selected index is valid
         if self.selected_index >= len(contacts_in_letter):
@@ -124,9 +164,13 @@ class ContactsApp(App):
         start_idx = max(0, self.selected_index - 1)
         visible_contacts = contacts_in_letter[start_idx:start_idx + max_visible]
         
-        use_font(ctx, "6")
         for i, contact in enumerate(visible_contacts):
             actual_idx = start_idx + i
+            
+            # Stop rendering if we would exceed the safe area
+            if y + 14 > max_y:
+                break
+            
             name = contact.get('name', '')[:16]
             phone = contact.get('phone', '')
             
@@ -136,19 +180,21 @@ class ContactsApp(App):
             # Highlight selected
             if actual_idx == self.selected_index:
                 ctx.d.set_pen(ctx.INK)
-                ctx.d.rectangle(0, y - 1, ctx.W, 8)
+                ctx.d.rectangle(0, y - 1, ctx.W, 15)
                 ctx.d.set_pen(ctx.BG)
             
-            ctx.d.text("{} ..{}".format(name, phone_excerpt), 2, y, ctx.W, 1)
+            # Contact info on two lines
+            ctx.d.text(name, 2, y, ctx.W, 1)
+            ctx.d.text("..{}".format(phone_excerpt), 2, y + 7, ctx.W, 1)
             
             if actual_idx == self.selected_index:
                 ctx.d.set_pen(ctx.INK)
             
-            y += 8
+            y += 16
         
-        # Help text
+        # Help text above alphabet bar
         use_font(ctx, "6")
-        ctx.d.text("n=new  Enter=view  q=quit", 2, ctx.H - 16, ctx.W, 1)
+        ctx.d.text("n=new  Enter=view  q=quit", 2, 48, ctx.W, 1)
         
         # Draw alphabet bar
         self.draw_alphabet_bar(ctx, grouped)
