@@ -7,6 +7,10 @@ def use_font(ctx, size="8"):
         ctx.d.set_font("bitmap8")
     elif size == "14":
         ctx.d.set_font("bitmap14_outline")
+    elif size == "sans":
+        ctx.d.set_font("sans")
+    elif size == "cursive":
+        ctx.d.set_font("cursive")
 
 
 def cls(ctx):

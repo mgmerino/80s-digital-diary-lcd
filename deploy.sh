@@ -121,6 +121,7 @@ ensure_dir() {
 echo -e "${BLUE}--- Phase 1: Creating directories ---${NC}"
 ensure_dir "core"
 ensure_dir "apps"
+ensure_dir "assets"
 echo ""
 
 echo -e "${BLUE}--- Phase 2: Uploading core modules ---${NC}"
@@ -147,6 +148,8 @@ upload_file "apps/theme_chooser.py" "apps/theme_chooser.py"
 upload_file "apps/w_brightness.py" "apps/w_brightness.py"
 upload_file "apps/todos.py" "apps/todos.py"
 
+echo -e "${BLUE}--- Phase 4: Uploading assets ---${NC}"
+upload_file "assets/quotes.txt" "assets/quotes.txt"
 echo ""
 
 echo -e "${BLUE}--- Phase 4: Uploading main file ---${NC}"
