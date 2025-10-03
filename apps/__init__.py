@@ -11,11 +11,12 @@ from .settime import SetTimeApp
 from .moonphase import MoonPhaseApp
 from .theme_chooser import ThemeChooserApp
 from .w_brightness import WBrightnessApp
+from .todos import TodoApp
 
 __all__ = [
     'App', 'AppManager', 'IconMenu',
     'ClockApp', 'SettingsApp', 'CalculatorApp', 'CalendarApp',
     'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp', 'MoonPhaseApp',
-    'ThemeChooserApp', 'WBrightnessApp'
+    'ThemeChooserApp', 'WBrightnessApp', 'TodoApp'
 ]
 
