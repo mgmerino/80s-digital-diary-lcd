@@ -1,10 +1,21 @@
-# LCD-GFX: MicroPython Icon-Based Menu System
+# LCD-GFX: MicroPython Icon-Based Menu System 80's style with a Raspberry Pi Pico and 3D printed case
 
-A beautiful, modular icon-based menu system for MicroPython, designed for the **Pimoroni GFX Pack** (128x64 LCD) with **CardKB** input. This project provides a feature-rich personal digital assistant (PDA) experience on a Raspberry Pi Pico, with multiple apps including clock, calendar, calculator, contacts, games, weather, and more.
+A beautiful, modular icon-based menu system for MicroPython, designed for the **Pimoroni GFX Pack** (128x64 LCD) with **CardKB** input. This project provides a feature-rich personal 80's style digital assistant experience on a Raspberry Pi Pico, with multiple apps including clock, calendar, calculator, contacts, games, weather, and more.
 
 ![Project Status](https://img.shields.io/badge/status-active-success.svg)
 ![MicroPython](https://img.shields.io/badge/MicroPython-v1.20+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+### ⚠️ Disclaimer and early design pictures
+The project is under development. I am designing the case with Tinkercad. Here you can check some super-ultra-early pictures of the tentative design of the app and the case. As you can see, is far from being finished. I used this project as a base to build the keyboard plate and keycaps (Creative Commons (4.0 International License)
+Attribution-NonCommercial) https://www.printables.com/model/811577-textmesh-heltec-v3-edition:
+
+<img src="images/proto-early-design.jpg" alt="Proto-early-design" width="200" style="flex-direction: row;">
+<img src="images/main_menu_1.jpg" alt="Main menu" width="200" style="flex-direction: row;">
+<img src="images/calendar_view.jpg" alt="Calendar view" width="200" style="flex-direction: row;">
+<img src="images/daily_quote.jpg" alt="Daily quote" width="200" style="flex-direction: row;">
+<img src="images/clock.jpg" alt="Clock" width="200" style="flex-direction: row;">
+<img src="images/add_new_todo.jpg" alt="Add new Task to the Todo list" width="200" style="flex-direction: row;">
 
 ---
 
@@ -36,7 +47,7 @@ A beautiful, modular icon-based menu system for MicroPython, designed for the **
 - **Persistent data storage** for contacts, memos, todos, and settings
 - **Theme system** with multiple color schemes (amber, green phosphor, ice blue, white, red)
 - **Real-time clock** with analog and digital displays
-- **Weather integration** via OpenWeather API
+- **Weather integration** via OpenWeather API (under development)
 - **Games** including Snake and Maze
 - **Productivity apps** like calculator, calendar, todos, and memos
 
