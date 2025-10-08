@@ -7,15 +7,11 @@ A beautiful, modular icon-based menu system for MicroPython, designed for the **
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ### ⚠️ Disclaimer and early design pictures
-The project is under development. I am designing the case with Tinkercad. Here you can check some super-ultra-early pictures of the tentative design of the app and the case. As you can see, is far from being finished. I used this project as a base to build the keyboard plate and keycaps (Creative Commons (4.0 International License)
-Attribution-NonCommercial) https://www.printables.com/model/811577-textmesh-heltec-v3-edition:
+The project is under development. I am designing the case with Tinkercad. Here you can check some super-ultra-early pictures of the tentative design of the app and the case. As you can see, is far from being finished. I used this project as a base to build the keyboard plate and keycaps (Creative Commons (4.0 International License) Attribution-NonCommercial) https://www.printables.com/model/811577-textmesh-heltec-v3-edition:
 
-<img src="images/proto-early-design.jpg" alt="Proto-early-design" width="200" style="flex-direction: row;">
-<img src="images/main_menu_1.jpg" alt="Main menu" width="200" style="flex-direction: row;">
-<img src="images/calendar_view.jpg" alt="Calendar view" width="200" style="flex-direction: row;">
-<img src="images/daily_quote.jpg" alt="Daily quote" width="200" style="flex-direction: row;">
-<img src="images/clock.jpg" alt="Clock" width="200" style="flex-direction: row;">
-<img src="images/add_new_todo.jpg" alt="Add new Task to the Todo list" width="200" style="flex-direction: row;">
+<img src="images/proto-early-design.jpg" alt="Proto-early-design" width="200"><img src="images/main_menu_1.jpg" alt="Main menu" width="200"><img src="images/calendar_view.jpg" alt="Calendar view" width="200">
+
+<img src="images/daily_quote.jpg" alt="Daily quote" width="200"><img src="images/clock.jpg" alt="Clock" width="200"><img src="images/add_new_todo.jpg" alt="Add new Task to the Todo list" width="200">
 
 ---
 
