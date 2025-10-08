@@ -7,15 +7,11 @@ A beautiful, modular icon-based menu system for MicroPython, designed for the **
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ### ⚠️ Disclaimer and early design pictures
-The project is under development. I am designing the case with Tinkercad. Here you can check some super-ultra-early pictures of the tentative design of the app and the case. As you can see, is far from being finished. I used this project as a base to build the keyboard plate and keycaps (Creative Commons (4.0 International License)
-Attribution-NonCommercial) https://www.printables.com/model/811577-textmesh-heltec-v3-edition:
+The project is under development. I am designing the case with Tinkercad. Here you can check some super-ultra-early pictures of the tentative design of the app and the case. As you can see, is far from being finished. I used this project as a base to build the keyboard plate and keycaps (Creative Commons (4.0 International License) Attribution-NonCommercial) https://www.printables.com/model/811577-textmesh-heltec-v3-edition:
 
-<img src="images/proto-early-design.jpg" alt="Proto-early-design" width="200" style="flex-direction: row;">
-<img src="images/main_menu_1.jpg" alt="Main menu" width="200" style="flex-direction: row;">
-<img src="images/calendar_view.jpg" alt="Calendar view" width="200" style="flex-direction: row;">
-<img src="images/daily_quote.jpg" alt="Daily quote" width="200" style="flex-direction: row;">
-<img src="images/clock.jpg" alt="Clock" width="200" style="flex-direction: row;">
-<img src="images/add_new_todo.jpg" alt="Add new Task to the Todo list" width="200" style="flex-direction: row;">
+<img src="images/proto-early-design.jpg" alt="Proto-early-design" width="200"><img src="images/main_menu_1.jpg" alt="Main menu" width="200"><img src="images/calendar_view.jpg" alt="Calendar view" width="200">
+
+<img src="images/daily_quote.jpg" alt="Daily quote" width="200"><img src="images/clock.jpg" alt="Clock" width="200"><img src="images/add_new_todo.jpg" alt="Add new Task to the Todo list" width="200">
 
 ---
 
@@ -93,7 +89,7 @@ The CardKB connects via I2C:
 - **Analog clock** with hour markers and hands
 - **Digital time display** with 12/24-hour format toggle
 - **Date display** with month names
-- **Daily inspirational quotes** with beautiful popup modal
+- **Daily inspirational quotes** with popup modal
 - **Set time functionality** for initial configuration
 
 ### 📅 Calendar App
@@ -108,10 +104,9 @@ The CardKB connects via I2C:
 - **Clear and backspace** functions
 - **Large display** for easy reading
 
-### 📞 Contacts App
+### 📞 Contacts App (not fully implemented yet)
 - **Add/edit/delete contacts** with name and phone
 - **Persistent storage** in JSON format
-- **Search functionality**
 - **Scrollable list view**
 
 ### 📝 Memos & Todos
@@ -120,18 +115,18 @@ The CardKB connects via I2C:
 - **Edit and delete** functionality
 - **Data persistence** across reboots
 
-### 🎮 Games
+### 🎮 Games (not fully implemented yet)
 - **Snake** - Classic snake game with score tracking
 - **Maze** - Navigate through procedurally generated mazes
 
-### 🌤️ Weather App
+### 🌤️ Weather App (not fully implemented yet)
 - **Real-time weather data** from OpenWeather API
 - **Current conditions** (temperature, humidity, pressure)
 - **3-day forecast** with weather icons
 - **Auto-refresh** every 10 minutes
 - **Custom city selection**
 
-### 🌙 Moon Phase
+### 🌙 Moon Phase (not fully implemented yet)
 - **Current moon phase** visualization
 - **Phase name** (New Moon, Full Moon, etc.)
 - **Illumination percentage**
@@ -616,37 +611,25 @@ THEMES = {
 
 ---
 
-## 🚀 Future Roadmap
+## Future Roadmap
 
 ### High Priority
-
+- [ ] **Contacts App** - Add/edit/delete contacts with name and phone
+- [ ] **Memos App** - Add/view/delete notes with timestamps
+- [ ] **Todos App** - Add/delete/check tasks, persistence
+- [ ] **Games App** - Snake and Maze
+- [ ] **Weather App** - Real-time weather data from OpenWeather API
+- [ ] **Moon Phase App** - Current moon phase visualization
+- [ ] **Settings App** - Configuration
+- [ ] **3D Printed Case** - Custom enclosure design
 - [ ] **WiFi Configuration UI** - Setup wizard for network credentials
-- [ ] **Notification System** - Alerts for todos, calendar events
 - [ ] **Stopwatch & Timer** - Time tracking utilities
-- [ ] **Notes Sync** - Cloud backup for memos/todos (via WiFi)
-- [ ] **More Games** - Tetris, Pong, Breakout
-- [ ] **Music Player** - Basic audio playback with I2S DAC
-- [ ] **File Browser** - Navigate filesystem on Pico
 
 ### Medium Priority
 
-- [ ] **Animated Icons** - Frame-by-frame icon animations
-- [ ] **Custom Fonts** - More font choices and sizes
-- [ ] **Screen Saver** - Prevent burn-in with animated screensaver
 - [ ] **Power Management** - Sleep mode, battery monitoring
-- [ ] **Bluetooth Support** - Connect BT keyboard/gamepad
-- [ ] **QR Code Generator** - Generate QR codes for contacts/URLs
-- [ ] **Calculator History** - View previous calculations
 
 ### Long Term
-
-- [ ] **Web Interface** - Configure device via browser (HTTP server)
-- [ ] **OTA Updates** - Over-the-air firmware updates
-- [ ] **Plugin System** - Load apps from external files
-- [ ] **Multi-language Support** - Internationalization
-- [ ] **Voice Input** - Speech recognition via mic
-- [ ] **3D Printed Case** - Custom enclosure design
-- [ ] **Solar Charging** - Battery + solar panel integration
 
 ### Hardware Expansions
 
@@ -654,15 +637,11 @@ THEMES = {
 - [ ] **SD Card** - Expand storage for media files
 - [ ] **Temperature Sensor** - Local weather data
 - [ ] **Buzzer** - Audio alerts and beeps
-- [ ] **NeoPixel Ring** - RGB LED notifications
 
 ### Code Quality & Documentation
 
 - [ ] **Unit Tests** - Automated testing for core functions
 - [ ] **CI/CD Pipeline** - Automated deployment and testing
-- [ ] **Video Tutorials** - YouTube series on usage and development
-- [ ] **API Documentation** - Full API reference with examples
-- [ ] **Community Apps** - Marketplace for third-party apps
 
 ---
 
@@ -814,7 +793,7 @@ This project is licensed under the **MIT License**:
 ```
 MIT License
 
-Copyright (c) 2025 [Your Name]
+Copyright (c) 2025 mgmerino
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -839,19 +818,8 @@ SOFTWARE.
 
 ## 🙏 Acknowledgments
 
-- **Pimoroni** - For the excellent GFX Pack hardware and MicroPython libraries
-- **M5Stack** - For the CardKB mini keyboard
-- **MicroPython community** - For the amazing firmware and ecosystem
-- **OpenWeather** - For the free weather API
-- **Contributors** - Everyone who has helped improve this project
+- [@BLKOutCO_1898488](https://www.printables.com/@BLKOutCO_1898488) - For the 3D printed case used for the keyboard plate and keycaps
 
----
-
-## 📞 Contact & Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/lcd-gfx/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/lcd-gfx/discussions)
-- **Email**: your.email@example.com
 
 ---
 
