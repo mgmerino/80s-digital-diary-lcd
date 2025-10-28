@@ -18,14 +18,15 @@ class ContactsApp(App):
         self.edit_field = None  # 'name' or 'phone'
         self.edit_buffer = []
         
-        # Alphabet bitmap: 99x8 pixels (approx), each letter 4px wide, no separation in bitmap
+        # Alphabet bitmap: 128x8 pixels, each letter 4px wide + 1px separator in sprite
+        # First column (bit 0) is empty space, letters start at bit 1
         self.alphabet_bitmap = [
             0b00110011100111001110011110111100111010010111100001010010100001001010010111101111011110111001111011110100101001010010100101111000,
             0b00110010010100101001010000100001000010010010000001010010100001111010010100101001010010100101000000100100101001010010100100001000,
             0b01001010010100001001010000100001000010010010000001010100100001001011010100101001010010101001000000100100101001001100111100010000,
             0b01001011100100001001011100111001000011110010000001011000100001001011010100101111010010110001111000100100101001001000001000010000,
             0b01111010010100001001010000100001000010010010000001011000100001001010110100101000010010101000001000100100101001000100001000100000,
-            0b01001010010100001001010000100001011010010010000001010100100001001010110100101000010010100100001000100100101001001100001000100000,
+            0b01111010010100001001010000100001011010010010000001010100100001001010110100101000010010100100001000100100101001001100001000100000,
             0b01001010010100101001010000100001001010010010000001010010100001001010010100101000001100100100001000100100101111010010001001000000,
             0b01001011110111001110011110100000111010010111101111010010111101001010010111101000000010100101111000100111101111010010001001111000,]
     
@@ -78,10 +79,10 @@ class ContactsApp(App):
     
     def draw_letter_from_bitmap(self, ctx, letter_index, x, y, invert=False):
         """Draw a single letter from the alphabet bitmap"""
-        # Each letter is 4 pixels wide, consecutive in bitmap (no separation)
-        # Bitmap has 99 bits total, so we use the actual bit length
-        start_bit = letter_index * 4  # Starting position - letters are consecutive
-        bitmap_width = 128  # Actual width of the bitmap
+        # Bitmap is 128 bits wide, letters start at bit 1 (bit 0 is empty space)
+        # Each letter is 4 pixels wide + 1 pixel separator = 5 pixels per letter in sprite
+        start_bit = 1 + (letter_index * 5)  # Starting position in bitmap
+        bitmap_width = 128  # Total bitmap width
         
         for row in range(8):
             bitmap_row = self.alphabet_bitmap[row]
@@ -91,48 +92,74 @@ class ContactsApp(App):
                 if bit_pos >= bitmap_width:
                     continue
                 # Access from MSB (left) to LSB (right)
-                # For a 99-bit number, leftmost bit is at position 98 (when counting from right)
+                # For a 128-bit number, leftmost bit is at position 127 (when counting from right)
                 if bitmap_row & (1 << (bitmap_width - 1 - bit_pos)):
-                    if invert:
-                        # Don't draw (will show as background color when inverted)
-                        pass
+                    # Letter pixel is set
+                    if not invert:
+                        # Normal: draw letter in current pen color
+                        ctx.d.pixel(x + col, y + row)
                     else:
-                        ctx.d.pixel(x + col, y + row)
+                        # Inverted: draw letter (will be light on dark background)
+                        pass
                 else:
-                    if invert:
-                        ctx.d.pixel(x + col, y + row)
+                    # Letter pixel is not set (background)
+                    if not invert:
+                        # Normal: don't draw (transparent background)
+                        pass
     
     def draw_alphabet_bar(self, ctx, grouped):
-        """Draw alphabet navigation bar at bottom using bitmap"""
+        """Draw alphabet navigation bar at bottom using bitmap with horizontal scrolling"""
         # Single line at y=56 (near bottom of 64px display)
         y = 56
-        x = 0  # Start at x=0 (26 letters * 6px = 156px, will need to scroll or fit)
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         
+        # Calculate scroll offset to center current letter
+        # Each letter takes 6 pixels (4px letter + 2px separation)
+        letter_spacing = 6
+        display_width = 128
+        total_width = len(letters) * letter_spacing  # 156px total
+        
+        # Find current letter index
+        try:
+            current_idx = letters.index(self.current_letter)
+        except ValueError:
+            current_idx = 0
+        
+        # Calculate offset to center current letter
+        # Position of current letter in the full alphabet bar
+        current_letter_pos = current_idx * letter_spacing + 2  # +2 to center the 4px letter
+        # Offset to center it on screen
+        scroll_offset = current_letter_pos - (display_width // 2)
+        
+        # Clamp scroll offset to keep letters on screen
+        max_offset = total_width - display_width
+        scroll_offset = max(0, min(scroll_offset, max_offset))
+        
+        # Draw letters with scroll offset
         for i, letter in enumerate(letters):
-            # Skip letters that would go off screen (128px width)
-            if x + 4 > 128:
-                break
-                
+            # Calculate screen position with scroll
+            x = i * letter_spacing - scroll_offset
+            
+            # Skip letters that are completely off screen
+            if x + 4 < 0 or x >= display_width:
+                continue
+            
             # Highlight current letter or letters with contacts
             if letter == self.current_letter:
                 # Selected letter - filled background
-                ctx.d.set_pen(ctx.INK)
+                #ctx.d.set_pen(ctx.INK)
                 ctx.d.rectangle(x, y, 4, 8)
-                ctx.d.set_pen(ctx.BG)
+                #ctx.d.set_pen(ctx.BG)
                 self.draw_letter_from_bitmap(ctx, i, x, y, invert=True)
-                ctx.d.set_pen(ctx.INK)
+                #ctx.d.set_pen(ctx.INK)
             elif letter in grouped:
                 # Letter with contacts - draw frame
-                #ctx.d.rectangle(x - 1, y - 1, 6, 10)
-                pass
-                self.draw_letter_from_bitmap(ctx, i, x, y, invert=False)
+                if x - 1 >= 0 and x + 5 <= display_width:
+                    ctx.d.rectangle(x - 1, y - 1, 6, 10)
+                self.draw_letter_from_bitmap(ctx, i, x, y, invert=True)
             else:
                 # Normal letter
                 self.draw_letter_from_bitmap(ctx, i, x, y, invert=False)
-            
-            # Move to next letter position (4px letter + 2px separation)
-            x += 6
     
     def draw_list(self, ctx):
         """Draw contacts list view"""

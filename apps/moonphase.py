@@ -10,6 +10,7 @@ class MoonPhaseApp(App):
     tick_ms = 1000  # update every second
     
     def __init__(self):
+        self.day_offset = 0  # Days offset from today (negative = past, positive = future)
         self.phase_names = [
             "New Moon",
             "Waxing Crescent",
@@ -139,8 +140,8 @@ class MoonPhaseApp(App):
                 if bits & (1 << (15 - col)):
                     ctx.d.pixel(start_x + col, start_y + row)
     
-    def calculate_moon_phase(self):
-        """Calculate current moon phase (0.0 = new moon, 0.5 = full moon, 1.0 = new moon)"""
+    def calculate_moon_phase(self, day_offset=0):
+        """Calculate moon phase for a given day offset (0.0 = new moon, 0.5 = full moon, 1.0 = new moon)"""
         # Known new moon: January 6, 2000, 18:14 UTC (JD 2451550.26)
         # Synodic month = 29.53058770576 days
         
@@ -157,6 +158,9 @@ class MoonPhaseApp(App):
         B = 2 - A + A // 4
         JD = int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + day + B - 1524.5
         JD += (hour + minute / 60.0) / 24.0
+        
+        # Apply day offset
+        JD += day_offset
         
         # Days since known new moon
         days_since = JD - 2451550.26
@@ -182,17 +186,44 @@ class MoonPhaseApp(App):
         
         return phase_idx, illumination
     
+    def get_date_string(self, day_offset):
+        """Get formatted date string for the given day offset"""
+        # Get current timestamp
+        current_time = time.time()
+        # Add offset in seconds (day_offset * 86400 seconds per day)
+        target_time = current_time + (day_offset * 86400)
+        # Convert to local time
+        tm = time.localtime(target_time)
+        
+        # Format: "Mon, Oct 3, 2025"
+        month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        
+        # tm[6] is weekday (0=Monday, 6=Sunday)
+        weekday = day_names[tm[6]]
+        month = month_names[tm[1] - 1]
+        day = tm[2]
+        year = tm[0]
+        
+        return "{}, {} {}, {}".format(weekday, month, day, year)
+    
     def draw(self, ctx):
         cls(ctx)
-        header(ctx, "Moon Phase")
         
-        # Calculate current moon phase
-        phase = self.calculate_moon_phase()
+        # Display date at the top
+        use_font(ctx, "6")
+        date_str = self.get_date_string(self.day_offset)
+        date_x = (ctx.W - len(date_str) * 6) // 2  # Center the date
+        ctx.d.text(date_str, date_x, 2, ctx.W, 1)
+        
+        # Calculate moon phase for the selected day
+        phase = self.calculate_moon_phase(self.day_offset)
         phase_idx, illumination = self.get_phase_info(phase)
         
-        # Draw the 32x32 moon icon centered
+        # Draw the 32x32 moon icon shifted to the right
         moon_icon = self.moon_icons[phase_idx]
-        icon_x = (ctx.W - 32) // 2
+        icon_x = ctx.W - 38  # Position icon on the right side (6px from right edge)
         icon_y = 16
         
         for row, bits in enumerate(moon_icon):
@@ -200,30 +231,37 @@ class MoonPhaseApp(App):
                 if bits & (1 << (31 - col)):
                     ctx.d.pixel(icon_x + col, icon_y + row)
         
-        # Display phase name
+        # Display phase name on the left side
         use_font(ctx, "8")
         phase_name = self.phase_names[phase_idx]
-        text_x = (ctx.W - len(phase_name) * 8) // 2
-        ctx.d.text(phase_name, text_x, icon_y + 36, ctx.W, 1)
+        text_x = 4  # Left-aligned text with some padding
+        ctx.d.text(phase_name, text_x, 18, ctx.W, 1)
         
         # Display illumination percentage
         use_font(ctx, "6")
         illum_text = "Illum: {:.0f}%".format(illumination)
-        illum_x = (ctx.W - len(illum_text) * 6) // 2
-        ctx.d.text(illum_text, illum_x, icon_y + 46, ctx.W, 1)
+        ctx.d.text(illum_text, text_x, 30, ctx.W, 1)
         
         # Display age of moon in days
         age_days = phase * 29.53
         age_text = "Age: {:.1f} days".format(age_days)
-        age_x = (ctx.W - len(age_text) * 6) // 2
-        ctx.d.text(age_text, age_x, icon_y + 54, ctx.W, 1)
+        ctx.d.text(age_text, text_x, 40, ctx.W, 1)
         
-        # Hint
+        # Hints
         use_font(ctx, "6")
-        ctx.d.text("q=quit", 2, ctx.H - 6, ctx.W, 1)
+        ctx.d.text("< > nav  q=quit", 2, ctx.H - 6, ctx.W, 1)
     
     def handle_key(self, ctx, k):
         if k in (ord('q'), 27):  # q or ESC
             return "pop"
+        elif k in (ord('<'), ord(',')):  # Previous day
+            self.day_offset -= 1
+            return "redraw"
+        elif k in (ord('>'), ord('.')):  # Next day
+            self.day_offset += 1
+            return "redraw"
+        elif k == ord('0'):  # Return to today
+            self.day_offset = 0
+            return "redraw"
         return None
 
