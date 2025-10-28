@@ -118,6 +118,9 @@ ensure_dir() {
 }
 
 # Start deployment
+echo -e "${RED}* * * Creating secrets * * *${NC}"
+upload_file "secrets.py" "secrets.py"
+
 echo -e "${BLUE}--- Phase 1: Creating directories ---${NC}"
 ensure_dir "core"
 ensure_dir "apps"
@@ -130,6 +133,8 @@ upload_file "core/context.py" "core/context.py"
 upload_file "core/ui.py" "core/ui.py"
 upload_file "core/input.py" "core/input.py"
 upload_file "core/utils.py" "core/utils.py"
+upload_file "core/wifi_manager.py" "core/wifi_manager.py"
+upload_file "core/ntp_sync.py" "core/ntp_sync.py"
 echo ""
 
 echo -e "${BLUE}--- Phase 3: Uploading app modules ---${NC}"
