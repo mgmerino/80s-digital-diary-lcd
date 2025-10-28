@@ -2,6 +2,8 @@
 
 from machine import I2C, Pin, RTC
 from gfx_pack import GfxPack  # type: ignore
+from core.wifi_manager import WiFiManager
+from core.ntp_sync import NTPSync
 
 try:
     import ujson as json
@@ -102,8 +104,16 @@ class Context:
             "w_brightness": 64,
             "clock_24h": True,
             "ask_time_on_boot": True,
-            "local_offset_min": 120
+            "local_offset_min": 120,
+            "wifi_ssid": "",
+            "wifi_password": "",
+            "wifi_auto_connect": True,
+            "ntp_auto_sync": True
         })
         self.theme = ThemeManager(self.gp, self.settings)
         self.theme.apply()
+        
+        # Initialize WiFi and NTP for Raspberry Pico 2 W
+        self.wifi = WiFiManager(self.settings)
+        self.ntp = NTPSync(self.rtc, self.settings)
 
