@@ -1,6 +1,7 @@
 .deploy_cache
 docs/generated/*
 secrets.py
+agenda.json
 # Virtual environment
 .venv/
 __pycache__/
