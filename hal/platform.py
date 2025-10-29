@@ -7,7 +7,12 @@ import sys
 def is_simulator():
     """Check if running in simulator mode"""
     # Check for SIM environment variable
-    return os.environ.get('SIM', '0') == '1'
+    # MicroPython doesn't have os.environ, so if it's missing, we're on real hardware
+    try:
+        return os.environ.get('SIM', '0') == '1'
+    except AttributeError:
+        # MicroPython - no os.environ, so not in simulator
+        return False
 
 
 def is_micropython():
@@ -115,9 +120,14 @@ class Platform:
         return self._sim_mode
 
 
+# Global singleton instance
+_platform_instance = None
+
+
 def get_platform():
     """Get platform instance (singleton)"""
-    if not hasattr(get_platform, '_instance'):
-        get_platform._instance = Platform()
-    return get_platform._instance
+    global _platform_instance
+    if _platform_instance is None:
+        _platform_instance = Platform()
+    return _platform_instance
 

@@ -34,27 +34,16 @@ def make_menu(ctx):
 def main():
     ctx = Context()
     
-    if ctx.settings.get("wifi_auto_connect", True):
-        if ctx.wifi.is_available():
-            ssid = ctx.settings.get("wifi_ssid", SSID)
-            if ssid:
-                print("Auto-connecting to WiFi...")
-                if ctx.wifi.connect(SSID, PWD):
-                    print("WiFi connected successfully!")
-                    
-                    # Auto-sync time if enabled
-                    if ctx.settings.get("ntp_auto_sync", True):
-                        print("Auto-syncing time from NTP...")
-                        ctx.ntp.sync_time()
-                else:
-                    print("WiFi auto-connect failed")
-    
-    # Fallback: ask for time if RTC is not set and WiFi not available
-    tm = time.localtime()
-    if ctx.settings.get("ask_time_on_boot", True) and tm[0] < 2024:
-        if not ctx.wifi.is_connected():
-            # Could push SetTimeApp here if time is not set
-            pass
+    if ctx.settings.get("wifi_auto_connect", True) and ctx.wifi.is_available() and SSID:
+        print("Auto-connecting to WiFi...")
+        if ctx.wifi.connect(SSID, PWD):
+            print("WiFi connected successfully!")
+            
+            if ctx.settings.get("ntp_auto_sync", True):
+                print("Auto-syncing time from NTP...")
+                ctx.ntp.sync_time()
+        else:
+            print("WiFi auto-connect failed")
     
     manager = AppManager(ctx, make_menu(ctx))
     manager.run()
