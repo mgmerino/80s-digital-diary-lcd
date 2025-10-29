@@ -1,0 +1,8 @@
+# Python dependencies for simulator
+
+# Main simulator dependency
+pygame>=2.0.0
+
+# Optional: for better image handling in tests
+Pillow>=9.0.0
+
