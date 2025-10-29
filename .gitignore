@@ -1,3 +1,13 @@
 .deploy_cache
 docs/generated/*
 secrets.py
+agenda.json
+# Virtual environment
+.venv/
+__pycache__/
+include/
+lib/
+lib64/
+bin/
+lib64
+pyvenv.cfg

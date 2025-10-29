@@ -21,6 +21,7 @@ The project is under development. I am designing the case with Tinkercad. Here y
 - [Hardware Requirements](#hardware-requirements)
 - [Features](#features)
 - [Project Architecture](#project-architecture)
+- [**🖥️ Simulator** ✨ NEW!](#%EF%B8%8F-simulator)
 - [Image Crafting](#image-crafting)
 - [Installation & Setup](#installation--setup)
 - [Development Workflow](#development-workflow)
@@ -230,6 +231,97 @@ All data is stored in `agenda.json` on the Pico's filesystem:
     "openweather_api_key": "..."
   }
 }
+```
+
+---
+
+## 🖥️ Simulator
+
+**NEW!** Develop and test your LCD-GFX apps on your PC without hardware!
+
+### Why Use the Simulator?
+
+- ⚡ **Faster development** - No need to upload to Pico for every change
+- 🐛 **Easier debugging** - Use Python debugging tools
+- 🎨 **UI iteration** - Quickly test different layouts and designs
+- 🧪 **Automated testing** - Screenshot comparison for UI tests
+- 💻 **No hardware needed** - Start developing before your parts arrive
+
+### Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the simulator
+python3 run_simulator.py
+
+# Or use the environment variable directly
+SIM=1 python3 main.py
+```
+
+### Features
+
+- **240×240 display** scaled ×3 in a pygame window
+- **Keyboard input** mapped to CardKB codes
+- **Hot reload** - Just restart the script to see changes
+- **Screenshot capture** - Save frames for testing
+- **Cross-platform** - Works on Linux, macOS, Windows
+
+### Keyboard Mappings
+
+| PC Key | CardKB Code | Description |
+|--------|-------------|-------------|
+| Arrow keys (↑↓←→) | 0xB4-0xB7 | Navigation |
+| Enter | 0x0D | Confirm |
+| Backspace | 0x08 | Delete |
+| Escape | 0x1B | Cancel/Exit |
+| Letters (a-z) | ASCII | Shift for uppercase |
+| Numbers (0-9) | ASCII | Direct input |
+
+### HAL Architecture
+
+The project uses a **Hardware Abstraction Layer** (HAL) that provides identical interfaces for both real hardware and simulation:
+
+```python
+# Your code works the same on Pico and PC!
+display = platform.init_display()
+display.fill(0)
+display.set_pen(15)
+display.text("Hello World", 10, 10, 240, 1)
+display.update()
+```
+
+**Interfaces:**
+- `Display` - Drawing operations (fill, rect, line, text, circle, etc.)
+- `Input` - Keyboard input (poll, read_key)
+- `Clock` - Timing (sleep_ms, ticks_ms, ticks_diff)
+- `Storage` - File operations (read, write, exists, remove)
+- `Backlight` - RGB+W backlight control
+
+### Development Workflow
+
+```bash
+# 1. Edit code
+nano apps/myapp.py
+
+# 2. Test in simulator
+SIM=1 python3 main.py
+
+# 3. When satisfied, deploy to hardware
+./deploy.sh
+```
+
+### Testing
+
+Create automated UI tests with screenshot comparison:
+
+```python
+# Save current display state
+display.save_screenshot("test_output.png")
+
+# Compare with expected output
+# ... comparison logic ...
 ```
 
 ---
