@@ -1,6 +1,5 @@
 # Base App Classes
 
-import time
 from core.ui import cls, rect_frame, use_font
 from core.input import read_key
 
@@ -20,7 +19,7 @@ class AppManager:
     def __init__(self, ctx, home_app):
         self.ctx = ctx
         self.stack = [home_app]
-        self._last = time.ticks_ms()
+        self._last = ctx.hal_clock.ticks_ms()
     
     def push(self, app):
         self.stack.append(app)
@@ -33,8 +32,8 @@ class AppManager:
         ctx = self.ctx
         while True:
             app = self.stack[-1]
-            now = time.ticks_ms()
-            if time.ticks_diff(now, self._last) >= app.tick_ms:
+            now = ctx.hal_clock.ticks_ms()
+            if ctx.hal_clock.ticks_diff(now, self._last) >= app.tick_ms:
                 app.draw(ctx)
                 ctx.d.update()
                 # allow draw() to request closing
@@ -53,7 +52,7 @@ class AppManager:
                     self.pop()
                 elif isinstance(act, tuple) and act[0] == "push":
                     self.push(act[1])
-            time.sleep_ms(5)
+            ctx.hal_clock.sleep_ms(5)
 
 
 class IconMenu(App):

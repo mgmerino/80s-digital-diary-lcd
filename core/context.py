@@ -1,9 +1,16 @@
 # Core Context and Configuration
 
-from machine import I2C, Pin, RTC
-from gfx_pack import GfxPack  # type: ignore
-from core.wifi_manager import WiFiManager
-from core.ntp_sync import NTPSync
+import os
+import sys
+from hal import get_platform, is_simulator
+
+# Check if we're in simulator mode
+_IS_SIMULATOR = is_simulator()
+
+# Import platform-specific modules
+if not _IS_SIMULATOR:
+    from machine import I2C, Pin, RTC
+    from gfx_pack import GfxPack  # type: ignore
 
 try:
     import ujson as json
@@ -37,10 +44,15 @@ class DataStore:
         with open(tmp, "w") as f:
             json.dump(db, f)
         try:
-            import os
-            if self.path in os.listdir():
-                os.remove(self.path)
-            os.rename(tmp, self.path)
+            if not _IS_SIMULATOR:
+                import os as uos
+                if self.path in uos.listdir():
+                    uos.remove(self.path)
+                uos.rename(tmp, self.path)
+            else:
+                if os.path.exists(self.path):
+                    os.remove(self.path)
+                os.rename(tmp, self.path)
         except:
             pass
     
@@ -79,25 +91,54 @@ class DataStore:
 
 
 class ThemeManager:
-    def __init__(self, gp, settings):
-        self.gp = gp
+    def __init__(self, backlight, settings):
+        self.backlight = backlight
         self.settings = settings
     
     def apply(self):
         t = (THEMES.get(self.settings.get("theme", "amber")) or THEMES["amber"]).copy()
         t["w"] = max(0, min(255, self.settings.get("w_brightness", t["w"])))
-        self.gp.set_backlight(t["r"], t["g"], t["b"], t["w"])
+        self.backlight.set_backlight(t["r"], t["g"], t["b"], t["w"])
 
 
 class Context:
     def __init__(self):
-        self.gp = GfxPack()
-        self.d = self.gp.display
-        self.W, self.H = self.d.get_bounds()
+        # Get platform
+        self.platform = get_platform()
+        
+        # Initialize hardware based on platform
+        if _IS_SIMULATOR:
+            # Simulator mode
+            self.gp = None
+            self.d = self.platform.init_display(width=240, height=240, scale=3)
+            self.W, self.H = self.d.get_bounds()
+            self.i2c = None
+            self.rtc = None
+            
+            # Initialize HAL components
+            self.hal_input = self.platform.init_input()
+            self.hal_clock = self.platform.init_clock()
+            self.hal_storage = self.platform.init_storage()
+            self.hal_backlight = self.platform.init_backlight()
+        else:
+            # Real hardware mode
+            self.gp = GfxPack()
+            self.d = self.platform.init_display(gfx_pack=self.gp)
+            self.W, self.H = self.d.get_bounds()
+            self.i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=400000)
+            self.rtc = RTC()
+            
+            # Initialize HAL components
+            self.hal_input = self.platform.init_input(i2c=self.i2c)
+            self.hal_clock = self.platform.init_clock()
+            self.hal_storage = self.platform.init_storage()
+            self.hal_backlight = self.platform.init_backlight(gfx_pack=self.gp)
+        
+        # Common initialization
         self.d.set_font("bitmap8")
         self.INK, self.BG = 15, 0
-        self.i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=400000)
-        self.rtc = RTC()
+        
+        # Data storage
         self.ds = DataStore("agenda.json")
         self.settings = self.ds.load_settings({
             "theme": "amber",
@@ -110,10 +151,40 @@ class Context:
             "wifi_auto_connect": True,
             "ntp_auto_sync": True
         })
-        self.theme = ThemeManager(self.gp, self.settings)
+        
+        # Theme management
+        self.theme = ThemeManager(self.hal_backlight, self.settings)
         self.theme.apply()
         
-        # Initialize WiFi and NTP for Raspberry Pico 2 W
-        self.wifi = WiFiManager(self.settings)
-        self.ntp = NTPSync(self.rtc, self.settings)
+        # Initialize WiFi and NTP (only for real hardware with WiFi support)
+        if not _IS_SIMULATOR:
+            from core.wifi_manager import WiFiManager
+            from core.ntp_sync import NTPSync
+            self.wifi = WiFiManager(self.settings)
+            self.ntp = NTPSync(self.rtc, self.settings)
+        else:
+            # Mock WiFi and NTP for simulator
+            self.wifi = MockWiFiManager()
+            self.ntp = MockNTPSync()
 
+
+class MockWiFiManager:
+    """Mock WiFi manager for simulator"""
+    
+    def is_available(self):
+        return False
+    
+    def is_connected(self):
+        return False
+    
+    def connect(self, ssid, password):
+        print(f"[SIM] Mock WiFi connect to {ssid}")
+        return False
+
+
+class MockNTPSync:
+    """Mock NTP sync for simulator"""
+    
+    def sync_time(self):
+        print("[SIM] Mock NTP sync")
+        return False
