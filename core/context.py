@@ -145,7 +145,8 @@ class Context:
             "w_brightness": 64,
             "clock_24h": True,
             "ask_time_on_boot": True,
-            "local_offset_min": 120,
+            "timezone": "CET",  # Default to CET (GMT+1/+2 with DST)
+            "local_offset_min": 60,  # Fallback offset (GMT+1)
             "wifi_ssid": "",
             "wifi_password": "",
             "wifi_auto_connect": True,
@@ -156,12 +157,16 @@ class Context:
         self.theme = ThemeManager(self.hal_backlight, self.settings)
         self.theme.apply()
         
+        # Initialize timezone manager
+        from core.timezone_manager import TimezoneManager
+        self.timezone_mgr = TimezoneManager(self.settings)
+        
         # Initialize WiFi and NTP (only for real hardware with WiFi support)
         if not _IS_SIMULATOR:
             from core.wifi_manager import WiFiManager
             from core.ntp_sync import NTPSync
             self.wifi = WiFiManager(self.settings)
-            self.ntp = NTPSync(self.rtc, self.settings)
+            self.ntp = NTPSync(self.rtc, self.settings, self.timezone_mgr)
         else:
             # Mock WiFi and NTP for simulator
             self.wifi = MockWiFiManager()
