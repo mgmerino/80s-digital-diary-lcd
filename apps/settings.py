@@ -7,6 +7,7 @@ from core.context import THEMES
 from apps.theme_chooser import ThemeChooserApp
 from apps.w_brightness import WBrightnessApp
 from apps.settime import SetTimeApp
+from apps.timezone_selector import TimezoneSelectorApp
 
 class SettingsApp(App):
     title = "Config"
@@ -14,7 +15,7 @@ class SettingsApp(App):
     
     def __init__(self):
         self.idx = 0
-        self.items = ["Theme", "W Brightness", "Set Time", "Back"]
+        self.items = ["Theme", "W Brightness", "Set Time", "Timezone", "Back"]
         self.themes = list(THEMES.keys())
         self.tidx = 0
     
@@ -51,8 +52,10 @@ class SettingsApp(App):
             mark = ">" if i==self.idx else " "
             ctx.d.text("{} {}".format(mark,it), 2, 12+i*8, ctx.W, 1)
         t = ctx.settings.get("theme","amber")
-        ctx.d.text("Tema: {}".format(t), 2, ctx.H-16, ctx.W, 1)
-        ctx.d.text("W={}".format(ctx.settings.get("w_brightness",64)), 80, ctx.H-16, ctx.W, 1)
+        tz = ctx.settings.get("timezone","CET")
+        ctx.d.text("Tema: {}".format(t), 2, ctx.H-24, ctx.W, 1)
+        ctx.d.text("W={}".format(ctx.settings.get("w_brightness",64)), 80, ctx.H-24, ctx.W, 1)
+        ctx.d.text("TZ: {}".format(tz), 2, ctx.H-16, ctx.W, 1)
     
     def handle_key(self, ctx, k):
         if k in (ord('q'),27): return "pop"
@@ -68,6 +71,7 @@ class SettingsApp(App):
             if self.idx==0: return ("push", ThemeChooserApp())
             if self.idx==1: return ("push", WBrightnessApp())
             if self.idx==2: return ("push", SetTimeApp())
-            if self.idx==3: return "pop"
+            if self.idx==3: return ("push", TimezoneSelectorApp())
+            if self.idx==4: return "pop"
 
 

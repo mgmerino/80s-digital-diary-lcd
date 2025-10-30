@@ -168,6 +168,7 @@ upload_file "apps/settime.py" "apps/settime.py"
 upload_file "apps/theme_chooser.py" "apps/theme_chooser.py"
 upload_file "apps/w_brightness.py" "apps/w_brightness.py"
 upload_file "apps/todos.py" "apps/todos.py"
+upload_file "apps/timezone_selector.py" "apps/timezone_selector.py"
 
 echo -e "${BLUE}--- Phase 5: Uploading assets ---${NC}"
 upload_file "assets/quotes.txt" "assets/quotes.txt"

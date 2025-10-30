@@ -12,11 +12,12 @@ from .moonphase import MoonPhaseApp
 from .theme_chooser import ThemeChooserApp
 from .w_brightness import WBrightnessApp
 from .todos import TodoApp
+from .timezone_selector import TimezoneSelectorApp
 
 __all__ = [
     'App', 'AppManager', 'IconMenu',
     'ClockApp', 'SettingsApp', 'CalculatorApp', 'CalendarApp',
     'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp', 'MoonPhaseApp',
-    'ThemeChooserApp', 'WBrightnessApp', 'TodoApp'
+    'ThemeChooserApp', 'WBrightnessApp', 'TodoApp', 'TimezoneSelectorApp'
 ]
 
