@@ -150,6 +150,7 @@ upload_file "core/input.py" "core/input.py"
 upload_file "core/utils.py" "core/utils.py"
 upload_file "core/wifi_manager.py" "core/wifi_manager.py"
 upload_file "core/ntp_sync.py" "core/ntp_sync.py"
+upload_file "core/timezone_manager.py" "core/timezone_manager.py"
 echo ""
 
 echo -e "${BLUE}--- Phase 4: Uploading app modules ---${NC}"
