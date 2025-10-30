@@ -1,7 +1,6 @@
 # ===== main.py =====
 # Modular entry point
 
-import time
 from core import Context
 from apps import (
     AppManager, IconMenu,
@@ -30,10 +29,7 @@ def make_menu(ctx):
     ]
     return IconMenu(entries)
 
-
-def main():
-    ctx = Context()
-    
+def init_wifi(ctx):
     if ctx.settings.get("wifi_auto_connect", True) and ctx.wifi.is_available() and SSID:
         print("Auto-connecting to WiFi...")
         if ctx.wifi.connect(SSID, PWD):
@@ -44,6 +40,11 @@ def main():
                 ctx.ntp.sync_time()
         else:
             print("WiFi auto-connect failed")
+
+def main():
+    ctx = Context()
+    
+    init_wifi(ctx)
     
     manager = AppManager(ctx, make_menu(ctx))
     manager.run()
@@ -51,4 +52,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
