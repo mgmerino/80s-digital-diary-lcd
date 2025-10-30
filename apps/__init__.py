@@ -13,11 +13,13 @@ from .theme_chooser import ThemeChooserApp
 from .w_brightness import WBrightnessApp
 from .todos import TodoApp
 from .timezone_selector import TimezoneSelectorApp
+from .sysinfo import SystemInfoApp
 
 __all__ = [
     'App', 'AppManager', 'IconMenu',
     'ClockApp', 'SettingsApp', 'CalculatorApp', 'CalendarApp',
     'ContactsApp', 'MemosApp', 'GamesApp', 'SetTimeApp', 'MoonPhaseApp',
-    'ThemeChooserApp', 'WBrightnessApp', 'TodoApp', 'TimezoneSelectorApp'
+    'ThemeChooserApp', 'WBrightnessApp', 'TodoApp', 'TimezoneSelectorApp',
+    'SystemInfoApp'
 ]
 

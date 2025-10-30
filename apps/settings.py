@@ -8,6 +8,7 @@ from apps.theme_chooser import ThemeChooserApp
 from apps.w_brightness import WBrightnessApp
 from apps.settime import SetTimeApp
 from apps.timezone_selector import TimezoneSelectorApp
+from apps.sysinfo import SystemInfoApp
 
 class SettingsApp(App):
     title = "Config"
@@ -15,7 +16,7 @@ class SettingsApp(App):
     
     def __init__(self):
         self.idx = 0
-        self.items = ["Theme", "W Brightness", "Set Time", "Timezone", "Back"]
+        self.items = ["Theme", "W Brightness", "Set Time", "Timezone", "Sys Info", "Back"]
         self.themes = list(THEMES.keys())
         self.tidx = 0
     
@@ -72,6 +73,7 @@ class SettingsApp(App):
             if self.idx==1: return ("push", WBrightnessApp())
             if self.idx==2: return ("push", SetTimeApp())
             if self.idx==3: return ("push", TimezoneSelectorApp())
-            if self.idx==4: return "pop"
+            if self.idx==4: return ("push", SystemInfoApp())
+            if self.idx==5: return "pop"
 
 
