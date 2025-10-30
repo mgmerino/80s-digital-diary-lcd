@@ -22,9 +22,10 @@ class NTPSync:
     # NTP epoch is 1900-01-01, Unix epoch is 1970-01-01
     NTP_DELTA = 2208988800
     
-    def __init__(self, rtc, settings):
+    def __init__(self, rtc, settings, timezone_mgr=None):
         self.rtc = rtc
         self.settings = settings
+        self.timezone_mgr = timezone_mgr
         self.last_sync = None
     
     def is_available(self):
@@ -83,7 +84,7 @@ class NTPSync:
         Synchronize RTC with NTP server
         
         Args:
-            offset_minutes: Timezone offset in minutes (uses stored setting if None)
+            offset_minutes: Timezone offset in minutes (uses timezone manager if None)
         
         Returns:
             True if sync successful, False otherwise
@@ -91,10 +92,6 @@ class NTPSync:
         if not self.is_available():
             print("NTP not available (no network support)")
             return False
-        
-        # Get timezone offset
-        if offset_minutes is None:
-            offset_minutes = self.settings.get("local_offset_min", 0)
         
         # Try each NTP server until one works
         unix_time = None
@@ -107,6 +104,17 @@ class NTPSync:
         if unix_time is None:
             print("Failed to get time from any NTP server")
             return False
+        
+        # Get timezone offset
+        if offset_minutes is None:
+            # Use timezone manager if available (handles DST automatically)
+            if self.timezone_mgr is not None:
+                offset_minutes = self.timezone_mgr.get_offset(unix_time)
+                dst_info = " (DST)" if self.timezone_mgr.is_dst_active(unix_time) else ""
+                print(f"Using timezone: {self.timezone_mgr.get_timezone_name()}{dst_info}")
+            else:
+                # Fall back to simple offset from settings
+                offset_minutes = self.settings.get("local_offset_min", 0)
         
         # Apply timezone offset
         local_time = unix_time + (offset_minutes * 60)
