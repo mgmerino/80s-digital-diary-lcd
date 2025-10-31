@@ -7,9 +7,9 @@ import pygame
 # Key mapping from PC keyboard to CardKB codes
 KEY_MAP = {
     # Arrow keys
-    pygame.K_UP: 0xB4,      # Up arrow
-    pygame.K_DOWN: 0xB5,    # Down arrow
-    pygame.K_LEFT: 0xB6,    # Left arrow
+    pygame.K_UP: 0xB5,      # Up arrow
+    pygame.K_DOWN: 0xB6,    # Down arrow
+    pygame.K_LEFT: 0xB4,    # Left arrow
     pygame.K_RIGHT: 0xB7,   # Right arrow
     
     # Special keys
